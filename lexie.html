@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;600;700&family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
 <script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --bg: #0d1117;
@@ -668,9 +669,37 @@
     margin: 20px 0 8px;
     letter-spacing: 0.04em;
   }
-</style>
+
+  /* Loading overlay */
+  #loadingOverlay {
+    position: fixed; inset: 0; background: var(--bg);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    z-index: 100; gap: 16px;
+  }
+  #loadingOverlay.hidden { display: none; }
+  .spinner {
+    width: 40px; height: 40px;
+    border: 3px solid rgba(240,192,96,0.15);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .spinner-label { color: var(--muted); font-size: 14px; }
+
+  /* Disable state for buttons */
+  .start-btn:disabled, .btn-secondary:disabled {
+    opacity: 0.5; cursor: not-allowed;
+  }</style>
 </head>
 <body>
+
+<!-- Loading overlay shown while Supabase initialises / async ops run -->
+<div id="loadingOverlay">
+  <div class="spinner"></div>
+  <div class="spinner-label" id="loadingLabel">Loading Lexie…</div>
+</div>
 
 <!-- ══ LOGIN SCREEN ══ -->
 <div id="loginScreen" class="screen">
@@ -688,7 +717,7 @@
 
     <div class="login-error" id="loginError"></div>
 
-    <button class="start-btn" onclick="doLogin()">Sign In →</button>
+    <button class="start-btn" id="loginBtn" onclick="doLogin()">Sign In →</button>
 
     <div class="login-divider">Don't have an account?</div>
     <button class="btn-secondary" style="width:100%;padding:14px;border-radius:12px" onclick="showScreen('registerScreen')">Create Account ✨</button>
@@ -717,7 +746,7 @@
 
     <div class="login-error" id="registerError"></div>
 
-    <button class="start-btn" onclick="doRegister()">Create Account →</button>
+    <button class="start-btn" id="registerBtn" onclick="doRegister()">Create Account →</button>
 
     <div class="login-divider">Already have an account?</div>
     <button class="btn-secondary" style="width:100%;padding:14px;border-radius:12px" onclick="showScreen('loginScreen')">← Back to Sign In</button>
@@ -1033,15 +1062,16 @@ const WORDS = [
 ];
 
 // ════════════════════════════════════════════════════════
-//  AUTH & USER STORAGE
-//  All data lives in localStorage under two keys:
-//    lexie_users  — { username: { name, passwordHash } }
-//    lexie_progress — { username: { wordId: { seen, lastSeen } } }
-//  Session (who is logged in) stored under lexie_session.
+//  SUPABASE CONFIG
 // ════════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://cjgkkgrtojpkxyyddyny.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNqZ2trZ3J0b2pwa3h5eWRkeW55Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ3MzE1MzgsImV4cCI6MjA5MDMwNzUzOH0.8L2nsBsz46yhaiVD9BiF9aILbrZVw9RsXcXsCIeEYC8';
+const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-// Tiny hash — not cryptographic, but fine for a personal app.
-// Converts a string to a stable 8-char hex string.
+// ════════════════════════════════════════════════════════
+//  SIMPLE HASH (password obfuscation — not cryptographic,
+//  fine for a personal learning app)
+// ════════════════════════════════════════════════════════
 function simpleHash(str) {
   let h = 0x811c9dc5;
   for (let i = 0; i < str.length; i++) {
@@ -1051,56 +1081,21 @@ function simpleHash(str) {
   return h.toString(16).padStart(8, '0');
 }
 
-const USERS_KEY    = 'lexie_users';
-const PROGRESS_KEY = 'lexie_progress';
-const SESSION_KEY  = 'lexie_session';
-
-function getUsers() {
-  try { return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); } catch { return {}; }
-}
-function saveUsers(u) {
-  try { localStorage.setItem(USERS_KEY, JSON.stringify(u)); } catch {}
-}
-
-function getAllProgress() {
-  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); } catch { return {}; }
-}
-function saveAllProgress(p) {
-  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); } catch {}
-}
-
-// Per-user progress helpers
-function loadProgress() {
-  const all = getAllProgress();
-  return all[currentUser] || {};
-}
-function saveProgress(progress) {
-  const all = getAllProgress();
-  all[currentUser] = progress;
-  saveAllProgress(all);
-}
-function markWordsSeen(wordIds) {
-  const progress = loadProgress();
-  const now = new Date().toISOString();
-  wordIds.forEach(id => { progress[id] = { seen: true, lastSeen: now }; });
-  saveProgress(progress);
-}
-
-// Session
-function getSession() {
-  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; }
-}
-function setSession(username) {
-  try { localStorage.setItem(SESSION_KEY, JSON.stringify(username)); } catch {}
-}
-function clearSession() {
-  try { localStorage.removeItem(SESSION_KEY); } catch {}
-}
+// ════════════════════════════════════════════════════════
+//  SESSION  (stored locally — just remembers who is logged
+//  in so page refresh doesn't log you out)
+// ════════════════════════════════════════════════════════
+const SESSION_KEY = 'lexie_session';
+function getSession()          { try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; } }
+function setSession(u)         { try { localStorage.setItem(SESSION_KEY, JSON.stringify(u)); } catch {} }
+function clearSession()        { try { localStorage.removeItem(SESSION_KEY); } catch {} }
 
 // ════════════════════════════════════════════════════════
 //  APP STATE
 // ════════════════════════════════════════════════════════
-let currentUser   = null; // username string of logged-in user
+let currentUser   = null;   // username string
+let currentName   = null;   // display name
+let userProgress  = {};     // { wordId: { seen, lastSeen } } — cached from Supabase
 let selectedCount = null;
 let deck          = [];
 let currentIndex  = 0;
@@ -1108,33 +1103,92 @@ let isFlipped     = false;
 let isSpeaking    = false;
 
 // ════════════════════════════════════════════════════════
+//  LOADING UI HELPERS
+// ════════════════════════════════════════════════════════
+function showLoading(label = 'Loading…') {
+  document.getElementById('loadingLabel').textContent = label;
+  document.getElementById('loadingOverlay').classList.remove('hidden');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.add('hidden');
+}
+function setBtn(id, text, disabled) {
+  const b = document.getElementById(id);
+  if (!b) return;
+  b.textContent = text;
+  b.disabled    = disabled;
+}
+
+// ════════════════════════════════════════════════════════
+//  SUPABASE — PROGRESS
+// ════════════════════════════════════════════════════════
+async function fetchProgress() {
+  const { data, error } = await db
+    .from('progress')
+    .select('word_id, seen, last_seen')
+    .eq('username', currentUser);
+  if (error) { console.error('fetchProgress:', error); return; }
+  userProgress = {};
+  (data || []).forEach(r => {
+    userProgress[r.word_id] = { seen: r.seen, lastSeen: r.last_seen };
+  });
+}
+
+async function markWordsSeen(wordIds) {
+  const now  = new Date().toISOString();
+  // Optimistic local update
+  wordIds.forEach(id => { userProgress[id] = { seen: true, lastSeen: now }; });
+
+  // Upsert to Supabase (insert or update if row already exists)
+  const rows = wordIds.map(id => ({
+    username: currentUser,
+    word_id:  id,
+    seen:     true,
+    last_seen: now,
+  }));
+  const { error } = await db
+    .from('progress')
+    .upsert(rows, { onConflict: 'username,word_id' });
+  if (error) console.error('markWordsSeen:', error);
+}
+
+function loadProgress() { return userProgress; }
+
+// ════════════════════════════════════════════════════════
 //  AUTH LOGIC
 // ════════════════════════════════════════════════════════
-function doLogin() {
+async function doLogin() {
   const username = document.getElementById('loginUser').value.trim().toLowerCase();
   const password = document.getElementById('loginPass').value;
   const errEl    = document.getElementById('loginError');
   errEl.textContent = '';
 
-  if (!username || !password) {
-    errEl.textContent = 'Please fill in both fields.'; return;
-  }
-  const users = getUsers();
-  if (!users[username]) {
-    errEl.textContent = 'No account found with that username.'; return;
-  }
-  if (users[username].passwordHash !== simpleHash(password)) {
-    errEl.textContent = 'Incorrect password. Try again.'; return;
-  }
+  if (!username || !password) { errEl.textContent = 'Please fill in both fields.'; return; }
 
-  // Success
+  setBtn('loginBtn', 'Signing in…', true);
+  showLoading('Signing in…');
+
+  const { data, error } = await db
+    .from('users')
+    .select('name, password_hash')
+    .eq('username', username)
+    .single();
+
+  hideLoading();
+  setBtn('loginBtn', 'Sign In →', false);
+
+  if (error || !data) { errEl.textContent = 'No account found with that username.'; return; }
+  if (data.password_hash !== simpleHash(password)) { errEl.textContent = 'Incorrect password. Try again.'; return; }
+
   currentUser = username;
-  setSession(username);
+  currentName = data.name;
+  setSession({ username, name: data.name });
   document.getElementById('loginPass').value = '';
-  enterApp(users[username].name);
+
+  await enterApp(data.name);
 }
 
-function doRegister() {
+async function doRegister() {
   const name     = document.getElementById('regName').value.trim();
   const username = document.getElementById('regUser').value.trim().toLowerCase();
   const pass     = document.getElementById('regPass').value;
@@ -1142,54 +1196,65 @@ function doRegister() {
   const errEl    = document.getElementById('registerError');
   errEl.textContent = '';
 
-  if (!name || !username || !pass || !pass2) {
-    errEl.textContent = 'Please fill in all fields.'; return;
-  }
-  if (username.length < 3) {
-    errEl.textContent = 'Username must be at least 3 characters.'; return;
-  }
-  if (!/^[a-z0-9_]+$/.test(username)) {
-    errEl.textContent = 'Username: letters, numbers and _ only.'; return;
-  }
-  if (pass.length < 6) {
-    errEl.textContent = 'Password must be at least 6 characters.'; return;
-  }
-  if (pass !== pass2) {
-    errEl.textContent = 'Passwords do not match.'; return;
+  if (!name || !username || !pass || !pass2) { errEl.textContent = 'Please fill in all fields.'; return; }
+  if (username.length < 3)                   { errEl.textContent = 'Username must be at least 3 characters.'; return; }
+  if (!/^[a-z0-9_]+$/.test(username))        { errEl.textContent = 'Username: letters, numbers and _ only.'; return; }
+  if (pass.length < 6)                       { errEl.textContent = 'Password must be at least 6 characters.'; return; }
+  if (pass !== pass2)                        { errEl.textContent = 'Passwords do not match.'; return; }
+
+  setBtn('registerBtn', 'Creating account…', true);
+  showLoading('Creating your account…');
+
+  // Check username not taken
+  const { data: existing } = await db
+    .from('users')
+    .select('username')
+    .eq('username', username)
+    .single();
+
+  if (existing) {
+    hideLoading();
+    setBtn('registerBtn', 'Create Account →', false);
+    errEl.textContent = 'That username is already taken.';
+    return;
   }
 
-  const users = getUsers();
-  if (users[username]) {
-    errEl.textContent = 'That username is already taken.'; return;
-  }
+  const { error } = await db
+    .from('users')
+    .insert({ username, name, password_hash: simpleHash(pass) });
 
-  // Create account
-  users[username] = { name, passwordHash: simpleHash(pass) };
-  saveUsers(users);
+  hideLoading();
+  setBtn('registerBtn', 'Create Account →', false);
 
-  // Log them straight in
+  if (error) { errEl.textContent = 'Something went wrong. Please try again.'; console.error(error); return; }
+
   currentUser = username;
-  setSession(username);
-  // Clear form
+  currentName = name;
+  setSession({ username, name });
   ['regName','regUser','regPass','regPass2'].forEach(id => document.getElementById(id).value = '');
-  enterApp(name);
+
+  await enterApp(name);
 }
 
 function doLogout() {
-  currentUser = null;
+  currentUser   = null;
+  currentName   = null;
+  userProgress  = {};
   clearSession();
   window.speechSynthesis && window.speechSynthesis.cancel();
   selectedCount = null;
   document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('startBtn').disabled = true;
-  document.getElementById('loginUser').value = '';
-  document.getElementById('loginPass').value = '';
+  document.getElementById('loginUser').value   = '';
+  document.getElementById('loginPass').value   = '';
   document.getElementById('loginError').textContent = '';
   showScreen('loginScreen');
 }
 
-function enterApp(name) {
-  // Personalise the greeting
+async function enterApp(name) {
+  showLoading('Loading your progress…');
+  await fetchProgress();
+  hideLoading();
   const greetings = [
     `Hello, ${name}! Ready to learn today? 🌸`,
     `Welcome back, ${name}! Let's go! ✨`,
@@ -1316,7 +1381,7 @@ function handleCardClick(e) {
   if (!isFlipped) {
     isFlipped = true;
     document.getElementById('cardInner').classList.add('flipped');
-    markWordsSeen([deck[currentIndex].id]);
+    markWordsSeen([deck[currentIndex].id]); // fire-and-forget async
   } else {
     setTimeout(advanceCard, 280);
   }
@@ -1329,9 +1394,9 @@ function advanceCard() {
 
 // ════════════════════════════════════════════════════════
 //  TEXT TO SPEECH
-//  1. ResponsiveVoice (Malayalam) — best cross-platform
-//  2. Google Translate TTS via blob fetch — good fallback
-//  3. Web Speech API with ml-IN — last resort
+//  1. ResponsiveVoice — best cross-platform Malayalam
+//  2. Google Translate TTS blob — good desktop fallback
+//  3. Web Speech API ml-IN — last resort
 // ════════════════════════════════════════════════════════
 const ttsAudio = document.createElement('audio');
 ttsAudio.style.display = 'none';
@@ -1353,7 +1418,6 @@ async function speakMalayalam(text, btn) {
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   setSpeaking(btn, false);
 
-  // ── 1. ResponsiveVoice ──────────────────────────────
   if (typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()) {
     setSpeaking(btn, true);
     responsiveVoice.speak(text, 'Malayalam Female', {
@@ -1363,26 +1427,22 @@ async function speakMalayalam(text, btn) {
     });
     return;
   }
-
-  // ── 2. Google Translate TTS blob ───────────────────
   await googleTTSFallback(text, btn);
 }
 
 async function googleTTSFallback(text, btn) {
   const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=ml&client=gtx&q=${encodeURIComponent(text)}`;
   try {
-    const res  = await fetch(url);
-    if (!res.ok) throw new Error('bad response');
+    const res     = await fetch(url);
+    if (!res.ok) throw new Error();
     const blob    = await res.blob();
     const blobUrl = URL.createObjectURL(blob);
     setSpeaking(btn, true);
-    ttsAudio.src = blobUrl;
-    ttsAudio.onended = () => { setSpeaking(btn, false); URL.revokeObjectURL(blobUrl); };
-    ttsAudio.onerror = () => { setSpeaking(btn, false); URL.revokeObjectURL(blobUrl); webSpeechFallback(text, btn); };
+    ttsAudio.src      = blobUrl;
+    ttsAudio.onended  = () => { setSpeaking(btn, false); URL.revokeObjectURL(blobUrl); };
+    ttsAudio.onerror  = () => { setSpeaking(btn, false); URL.revokeObjectURL(blobUrl); webSpeechFallback(text, btn); };
     await ttsAudio.play();
-  } catch (_) {
-    webSpeechFallback(text, btn);
-  }
+  } catch (_) { webSpeechFallback(text, btn); }
 }
 
 function webSpeechFallback(text, btn) {
@@ -1390,8 +1450,7 @@ function webSpeechFallback(text, btn) {
   const voices  = window.speechSynthesis.getVoices();
   const mlVoice = voices.find(v => v.lang.toLowerCase().startsWith('ml'));
   const utt     = new SpeechSynthesisUtterance(text);
-  utt.lang  = 'ml-IN';
-  utt.rate  = 0.82;
+  utt.lang = 'ml-IN'; utt.rate = 0.82;
   if (mlVoice) utt.voice = mlVoice;
   setSpeaking(btn, true);
   utt.onend = utt.onerror = () => setSpeaking(btn, false);
@@ -1410,8 +1469,7 @@ function showDoneScreen() {
   const progress  = loadProgress();
   const seenCount = Object.values(progress).filter(p => p.seen).length;
   const pct       = Math.round((seenCount / WORDS.length) * 100);
-  const users     = getUsers();
-  const name      = currentUser ? (users[currentUser]?.name || currentUser) : 'you';
+  const name      = currentName || 'you';
 
   document.getElementById('doneCards').textContent = deck.length;
   document.getElementById('doneSeen').textContent  = seenCount;
@@ -1464,20 +1522,31 @@ function goAgain() {
 }
 
 // ════════════════════════════════════════════════════════
-//  INIT — resume session if already logged in
+//  INIT — auto-login from saved session
 // ════════════════════════════════════════════════════════
-(function init() {
-  const savedUser = getSession();
-  if (savedUser) {
-    const users = getUsers();
-    if (users[savedUser]) {
-      currentUser = savedUser;
-      enterApp(users[savedUser].name);
+(async function init() {
+  showLoading('Loading Lexie…');
+  const session = getSession();
+  if (session?.username) {
+    // Verify the user still exists in Supabase
+    const { data } = await db
+      .from('users')
+      .select('name')
+      .eq('username', session.username)
+      .single();
+    if (data) {
+      currentUser = session.username;
+      currentName = data.name;
+      await enterApp(data.name);
       return;
+    } else {
+      clearSession();
     }
   }
+  hideLoading();
   showScreen('loginScreen');
 })();
+
 </script>
 </body>
 </html>
