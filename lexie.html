@@ -9,6 +9,7 @@
 <title>Lexie — Learn Malayalam</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Malayalam:wght@400;600;700&family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script src="https://code.responsivevoice.org/responsivevoice.js?key=FREE"></script>
 <style>
   :root {
     --bg: #0d1117;
@@ -626,16 +627,109 @@
     .home-logo { font-size: 36px; margin-bottom: 4px; }
     .home-title { font-size: 34px; }
   }
+
+  /* ── Login Screen ── */
+  .login-card {
+    background: var(--surface);
+    border: 1px solid rgba(240,192,96,0.15);
+    border-radius: 32px;
+    padding: 48px 40px 44px;
+    width: min(400px, 100%);
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
+    animation: floatIn 0.7s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .login-field {
+    width: 100%;
+    background: var(--bg2);
+    border: 1.5px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    color: var(--text);
+    margin-bottom: 12px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .login-field:focus { border-color: rgba(240,192,96,0.5); }
+  .login-field::placeholder { color: var(--muted); }
+  .login-error {
+    color: #fc8181;
+    font-size: 13px;
+    text-align: center;
+    margin-top: -4px;
+    margin-bottom: 12px;
+    min-height: 20px;
+  }
+  .login-divider {
+    text-align: center;
+    color: var(--muted);
+    font-size: 12px;
+    margin: 20px 0 8px;
+    letter-spacing: 0.04em;
+  }
 </style>
 </head>
 <body>
 
+<!-- ══ LOGIN SCREEN ══ -->
+<div id="loginScreen" class="screen">
+  <div class="login-card" style="overflow-y:auto;max-height:96dvh">
+    <div class="home-logo">🌸</div>
+    <h1 class="home-title">Lexie</h1>
+    <p class="home-sub">Welcome back — keep learning <span>♥</span></p>
+
+    <p class="section-label" style="margin-bottom:10px">Username</p>
+    <input class="login-field" id="loginUser" type="text" placeholder="Enter your username" autocomplete="username" autocapitalize="none">
+
+    <p class="section-label" style="margin-bottom:10px">Password</p>
+    <input class="login-field" id="loginPass" type="password" placeholder="Enter your password" autocomplete="current-password"
+      onkeydown="if(event.key==='Enter') doLogin()">
+
+    <div class="login-error" id="loginError"></div>
+
+    <button class="start-btn" onclick="doLogin()">Sign In →</button>
+
+    <div class="login-divider">Don't have an account?</div>
+    <button class="btn-secondary" style="width:100%;padding:14px;border-radius:12px" onclick="showScreen('registerScreen')">Create Account ✨</button>
+  </div>
+</div>
+
+<!-- ══ REGISTER SCREEN ══ -->
+<div id="registerScreen" class="screen hidden">
+  <div class="login-card" style="overflow-y:auto;max-height:96dvh">
+    <div class="home-logo">✨</div>
+    <h1 class="home-title" style="font-size:34px">Create Account</h1>
+    <p class="home-sub">Start your Malayalam journey <span>🌸</span></p>
+
+    <p class="section-label" style="margin-bottom:10px">Your Name</p>
+    <input class="login-field" id="regName" type="text" placeholder="e.g. Priya" autocapitalize="words">
+
+    <p class="section-label" style="margin-bottom:10px">Username</p>
+    <input class="login-field" id="regUser" type="text" placeholder="Choose a username" autocomplete="username" autocapitalize="none">
+
+    <p class="section-label" style="margin-bottom:10px">Password</p>
+    <input class="login-field" id="regPass" type="password" placeholder="Choose a password" autocomplete="new-password">
+
+    <p class="section-label" style="margin-bottom:10px">Confirm Password</p>
+    <input class="login-field" id="regPass2" type="password" placeholder="Repeat your password" autocomplete="new-password"
+      onkeydown="if(event.key==='Enter') doRegister()">
+
+    <div class="login-error" id="registerError"></div>
+
+    <button class="start-btn" onclick="doRegister()">Create Account →</button>
+
+    <div class="login-divider">Already have an account?</div>
+    <button class="btn-secondary" style="width:100%;padding:14px;border-radius:12px" onclick="showScreen('loginScreen')">← Back to Sign In</button>
+  </div>
+</div>
+
 <!-- ══ HOME SCREEN ══ -->
-<div id="homeScreen" class="screen">
+<div id="homeScreen" class="screen hidden">
   <div class="home-card">
     <div class="home-logo">🌸</div>
     <h1 class="home-title">Lexie</h1>
-    <p class="home-sub">Your personal Malayalam tutor — made with love <span>♥</span></p>
+    <p class="home-sub" id="homeGreeting">Your personal Malayalam tutor — made with love <span>♥</span></p>
 
     <p class="section-label">How many cards today?</p>
     <div class="count-grid" id="countGrid">
@@ -664,6 +758,9 @@
         <span class="stat-val" id="statPct">0%</span>
         <span class="stat-lbl">Progress</span>
       </div>
+    </div>
+    <div style="margin-top:16px;text-align:center">
+      <button class="btn-secondary" style="padding:8px 20px;font-size:12px;border-radius:10px" onclick="doLogout()">Sign Out</button>
     </div>
   </div>
 </div>
@@ -712,250 +809,395 @@
 <script>
 // ════════════════════════════════════════════════════════
 //  WORD DATABASE  (200 Level-1 Malayalam words)
+//  Images sourced from Wikimedia Commons & Unsplash
+//  with specific IDs matched to each word's meaning.
 // ════════════════════════════════════════════════════════
 const WORDS = [
   // Greetings & Phrases
-  { id:"1",  malayalam:"നമസ്കാരം",   phonetic:"Namaskaram",    meaning:"Hello / Greeting",      imageUrl:"https://images.unsplash.com/photo-1590402444521-0e95690f04e1?w=600&auto=format&fit=crop" },
-  { id:"2",  malayalam:"നന്ദി",       phonetic:"Nandi",          meaning:"Thank You",             imageUrl:"https://images.unsplash.com/photo-1607748862156-7c548e7e98f4?w=600&auto=format&fit=crop" },
-  { id:"3",  malayalam:"ശരി",         phonetic:"Shari",          meaning:"Okay / Right",          imageUrl:"https://images.unsplash.com/photo-1553877522-43269d4ea984?w=600&auto=format&fit=crop" },
-  { id:"4",  malayalam:"അതെ",         phonetic:"Athe",           meaning:"Yes",                   imageUrl:"https://images.unsplash.com/photo-1543269865-cbf427effbad?w=600&auto=format&fit=crop" },
-  { id:"5",  malayalam:"ഇല്ല",         phonetic:"Illa",           meaning:"No",                    imageUrl:"https://images.unsplash.com/photo-1582213782179-e0d53f98f2ca?w=600&auto=format&fit=crop" },
+  { id:"1",  malayalam:"നമസ്കാരം",   phonetic:"Namaskaram",    meaning:"Hello / Greeting",       imageUrl:"https://upload.wikimedia.org/wikipedia/commons/thumb/9/93/Namaste-gesture.JPG/640px-Namaste-gesture.JPG" },
+  { id:"2",  malayalam:"നന്ദി",       phonetic:"Nandi",          meaning:"Thank You",              imageUrl:"https://upload.wikimedia.org/wikipedia/commons/thumb/d/d1/Thank_you_word_collage.jpg/640px-Thank_you_word_collage.jpg" },
+  { id:"3",  malayalam:"ശരി",         phonetic:"Shari",          meaning:"Okay / Right",           imageUrl:"https://upload.wikimedia.org/wikipedia/commons/thumb/4/4e/Single_thumbs_up.jpg/640px-Single_thumbs_up.jpg" },
+  { id:"4",  malayalam:"അതെ",         phonetic:"Athe",           meaning:"Yes",                    imageUrl:"https://upload.wikimedia.org/wikipedia/commons/thumb/e/e6/Green_tick.svg/640px-Green_tick.svg.png" },
+  { id:"5",  malayalam:"ഇല്ല",         phonetic:"Illa",           meaning:"No",                     imageUrl:"https://upload.wikimedia.org/wikipedia/commons/thumb/b/ba/Red_x.svg/640px-Red_x.svg.png" },
   // Family
-  { id:"6",  malayalam:"അമ്മ",         phonetic:"Amma",           meaning:"Mother",                imageUrl:"https://images.unsplash.com/photo-1591115765373-520b7a42b15e?w=600&auto=format&fit=crop" },
-  { id:"7",  malayalam:"അച്ഛൻ",        phonetic:"Achhan",         meaning:"Father",                imageUrl:"https://images.unsplash.com/photo-1490730141103-6cac27aaab94?w=600&auto=format&fit=crop" },
-  { id:"8",  malayalam:"ചേട്ടൻ",       phonetic:"Chettan",        meaning:"Elder Brother",         imageUrl:"https://images.unsplash.com/photo-1581579438747-1dc8d17bbce4?w=600&auto=format&fit=crop" },
-  { id:"9",  malayalam:"ചേച്ചി",       phonetic:"Chechi",         meaning:"Elder Sister",          imageUrl:"https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&auto=format&fit=crop" },
-  { id:"10", malayalam:"കുഞ്ഞ്",        phonetic:"Kunju",          meaning:"Baby / Little one",     imageUrl:"https://images.unsplash.com/photo-1519689680058-324335c77eba?w=600&auto=format&fit=crop" },
-  { id:"11", malayalam:"മകൻ",          phonetic:"Makan",          meaning:"Son",                   imageUrl:"https://images.unsplash.com/photo-1544126592-807ade215a0b?w=600&auto=format&fit=crop" },
-  { id:"12", malayalam:"മകൾ",          phonetic:"Makal",          meaning:"Daughter",              imageUrl:"https://images.unsplash.com/photo-1518736346975-b2e29c0f3d43?w=600&auto=format&fit=crop" },
+  { id:"6",  malayalam:"അമ്മ",         phonetic:"Amma",           meaning:"Mother",                 imageUrl:"https://upload.wikimedia.org/wikipedia/commons/thumb/2/26/YellowLabradorLooking_new.jpg/320px-YellowLabradorLooking_new.jpg" },
+  { id:"7",  malayalam:"അച്ഛൻ",        phonetic:"Achhan",         meaning:"Father",                 imageUrl:"https://images.unsplash.com/photo-1547995886-6dc09384c6e8?w=600&auto=format&fit=crop" },
+  { id:"8",  malayalam:"ചേട്ടൻ",       phonetic:"Chettan",        meaning:"Elder Brother",          imageUrl:"https://images.unsplash.com/photo-1607990283143-e81e7a2c9349?w=600&auto=format&fit=crop" },
+  { id:"9",  malayalam:"ചേച്ചി",       phonetic:"Chechi",         meaning:"Elder Sister",           imageUrl:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&auto=format&fit=crop" },
+  { id:"10", malayalam:"കുഞ്ഞ്",        phonetic:"Kunju",          meaning:"Baby",                   imageUrl:"https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=600&auto=format&fit=crop" },
+  { id:"11", malayalam:"മകൻ",          phonetic:"Makan",          meaning:"Son",                    imageUrl:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&auto=format&fit=crop" },
+  { id:"12", malayalam:"മകൾ",          phonetic:"Makal",          meaning:"Daughter",               imageUrl:"https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=600&auto=format&fit=crop" },
   // Nature
-  { id:"13", malayalam:"വെള്ളം",       phonetic:"Vellam",         meaning:"Water",                 imageUrl:"https://images.unsplash.com/photo-1471811423277-28562725e6e2?w=600&auto=format&fit=crop" },
-  { id:"14", malayalam:"മഴ",           phonetic:"Mazha",          meaning:"Rain",                  imageUrl:"https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=600&auto=format&fit=crop" },
-  { id:"15", malayalam:"സൂര്യൻ",       phonetic:"Suryan",         meaning:"Sun",                   imageUrl:"https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=600&auto=format&fit=crop" },
-  { id:"16", malayalam:"ചന്ദ്രൻ",      phonetic:"Chandran",       meaning:"Moon",                  imageUrl:"https://images.unsplash.com/photo-1532693322450-2cb5c511067d?w=600&auto=format&fit=crop" },
-  { id:"17", malayalam:"നക്ഷത്രം",     phonetic:"Nakshatram",     meaning:"Star",                  imageUrl:"https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?w=600&auto=format&fit=crop" },
-  { id:"18", malayalam:"ആകാശം",        phonetic:"Akasham",        meaning:"Sky",                   imageUrl:"https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&auto=format&fit=crop" },
-  { id:"19", malayalam:"കടൽ",          phonetic:"Kadal",          meaning:"Sea / Ocean",           imageUrl:"https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&auto=format&fit=crop" },
-  { id:"20", malayalam:"മല",           phonetic:"Mala",           meaning:"Mountain",              imageUrl:"https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&auto=format&fit=crop" },
-  { id:"21", malayalam:"നദി",          phonetic:"Nadi",           meaning:"River",                 imageUrl:"https://images.unsplash.com/photo-1524661135-423995f22d0b?w=600&auto=format&fit=crop" },
-  { id:"22", malayalam:"കാട്",          phonetic:"Kaadu",          meaning:"Forest / Jungle",       imageUrl:"https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&auto=format&fit=crop" },
-  { id:"23", malayalam:"മണ്ണ്",         phonetic:"Mannu",          meaning:"Soil / Earth",          imageUrl:"https://images.unsplash.com/photo-1611735341450-74d61e660ad2?w=600&auto=format&fit=crop" },
-  { id:"24", malayalam:"തീ",           phonetic:"Thee",           meaning:"Fire",                  imageUrl:"https://images.unsplash.com/photo-1545156521-77bd85671d30?w=600&auto=format&fit=crop" },
-  { id:"25", malayalam:"കാറ്റ്",        phonetic:"Kaattu",         meaning:"Wind",                  imageUrl:"https://images.unsplash.com/photo-1504608524841-42584120d1fc?w=600&auto=format&fit=crop" },
+  { id:"13", malayalam:"വെള്ളം",       phonetic:"Vellam",         meaning:"Water",                  imageUrl:"https://images.unsplash.com/photo-1559825481-12a05cc00344?w=600&auto=format&fit=crop" },
+  { id:"14", malayalam:"മഴ",           phonetic:"Mazha",          meaning:"Rain",                   imageUrl:"https://images.unsplash.com/photo-1515694346937-94d85e41e6f0?w=600&auto=format&fit=crop" },
+  { id:"15", malayalam:"സൂര്യൻ",       phonetic:"Suryan",         meaning:"Sun",                    imageUrl:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&auto=format&fit=crop" },
+  { id:"16", malayalam:"ചന്ദ്രൻ",      phonetic:"Chandran",       meaning:"Moon",                   imageUrl:"https://images.unsplash.com/photo-1532693322450-2cb5c511067d?w=600&auto=format&fit=crop" },
+  { id:"17", malayalam:"നക്ഷത്രം",     phonetic:"Nakshatram",     meaning:"Star",                   imageUrl:"https://images.unsplash.com/photo-1475274047050-1d0c0975c63e?w=600&auto=format&fit=crop" },
+  { id:"18", malayalam:"ആകാശം",        phonetic:"Akasham",        meaning:"Sky",                    imageUrl:"https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&auto=format&fit=crop" },
+  { id:"19", malayalam:"കടൽ",          phonetic:"Kadal",          meaning:"Sea / Ocean",            imageUrl:"https://images.unsplash.com/photo-1505118380757-91f5f5632de0?w=600&auto=format&fit=crop" },
+  { id:"20", malayalam:"മല",           phonetic:"Mala",           meaning:"Mountain",               imageUrl:"https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=600&auto=format&fit=crop" },
+  { id:"21", malayalam:"നദി",          phonetic:"Nadi",           meaning:"River",                  imageUrl:"https://images.unsplash.com/photo-1578645510447-e20b4311e3ce?w=600&auto=format&fit=crop" },
+  { id:"22", malayalam:"കാട്",          phonetic:"Kaadu",          meaning:"Forest",                 imageUrl:"https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&auto=format&fit=crop" },
+  { id:"23", malayalam:"മണ്ണ്",         phonetic:"Mannu",          meaning:"Soil / Earth",           imageUrl:"https://images.unsplash.com/photo-1500651230702-0e2d8a49d4e7?w=600&auto=format&fit=crop" },
+  { id:"24", malayalam:"തീ",           phonetic:"Thee",           meaning:"Fire",                   imageUrl:"https://images.unsplash.com/photo-1546984575-757f4f7c13cf?w=600&auto=format&fit=crop" },
+  { id:"25", malayalam:"കാറ്റ്",        phonetic:"Kaattu",         meaning:"Wind",                   imageUrl:"https://images.unsplash.com/photo-1504608524841-42584120d1fc?w=600&auto=format&fit=crop" },
   // Plants & Flowers
-  { id:"26", malayalam:"പൂവ്",          phonetic:"Poovu",          meaning:"Flower",                imageUrl:"https://images.unsplash.com/photo-1490750967815-24419511126e?w=600&auto=format&fit=crop" },
-  { id:"27", malayalam:"മരം",           phonetic:"Maram",          meaning:"Tree",                  imageUrl:"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&auto=format&fit=crop" },
-  { id:"28", malayalam:"ഇല",           phonetic:"Ila",            meaning:"Leaf",                  imageUrl:"https://images.unsplash.com/photo-1562595410-8e12e8ea8494?w=600&auto=format&fit=crop" },
-  { id:"29", malayalam:"പുല്ല്",         phonetic:"Pullu",          meaning:"Grass",                 imageUrl:"https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600&auto=format&fit=crop" },
-  { id:"30", malayalam:"കൃഷി",          phonetic:"Krishi",         meaning:"Agriculture / Farming", imageUrl:"https://images.unsplash.com/photo-1500651230702-0e2d8a49d4e7?w=600&auto=format&fit=crop" },
+  { id:"26", malayalam:"പൂവ്",          phonetic:"Poovu",          meaning:"Flower",                 imageUrl:"https://images.unsplash.com/photo-1490750967815-24419511126e?w=600&auto=format&fit=crop" },
+  { id:"27", malayalam:"മരം",           phonetic:"Maram",          meaning:"Tree",                   imageUrl:"https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=600&auto=format&fit=crop" },
+  { id:"28", malayalam:"ഇല",           phonetic:"Ila",            meaning:"Leaf",                   imageUrl:"https://images.unsplash.com/photo-1562595410-8e12e8ea8494?w=600&auto=format&fit=crop" },
+  { id:"29", malayalam:"പുല്ല്",         phonetic:"Pullu",          meaning:"Grass",                  imageUrl:"https://images.unsplash.com/photo-1463936575829-25148e1db1b8?w=600&auto=format&fit=crop" },
+  { id:"30", malayalam:"കൃഷി",          phonetic:"Krishi",         meaning:"Farming",                imageUrl:"https://images.unsplash.com/photo-1500651230702-0e2d8a49d4e7?w=600&auto=format&fit=crop" },
   // Animals
-  { id:"31", malayalam:"പൂച്ച",         phonetic:"Poocha",         meaning:"Cat",                   imageUrl:"https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&auto=format&fit=crop" },
-  { id:"32", malayalam:"നായ",           phonetic:"Naaya",          meaning:"Dog",                   imageUrl:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&auto=format&fit=crop" },
-  { id:"33", malayalam:"ആന",           phonetic:"Aana",           meaning:"Elephant",              imageUrl:"https://images.unsplash.com/photo-1548366086-7f1b76106622?w=600&auto=format&fit=crop" },
-  { id:"34", malayalam:"പശു",           phonetic:"Pashu",          meaning:"Cow",                   imageUrl:"https://images.unsplash.com/photo-1545468800-85cc9bc6ecf7?w=600&auto=format&fit=crop" },
-  { id:"35", malayalam:"കോഴി",          phonetic:"Kozhi",          meaning:"Chicken / Hen",         imageUrl:"https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop" },
-  { id:"36", malayalam:"മീൻ",           phonetic:"Meen",           meaning:"Fish",                  imageUrl:"https://images.unsplash.com/photo-1544551763-46a013bb70d5?w=600&auto=format&fit=crop" },
-  { id:"37", malayalam:"പക്ഷി",         phonetic:"Pakshi",         meaning:"Bird",                  imageUrl:"https://images.unsplash.com/photo-1444464666168-49d633b86797?w=600&auto=format&fit=crop" },
-  { id:"38", malayalam:"ആട്",           phonetic:"Aadu",           meaning:"Goat",                  imageUrl:"https://images.unsplash.com/photo-1524024973431-2ad916746881?w=600&auto=format&fit=crop" },
-  { id:"39", malayalam:"കുതിര",         phonetic:"Kuthira",        meaning:"Horse",                 imageUrl:"https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=600&auto=format&fit=crop" },
-  { id:"40", malayalam:"കരടി",          phonetic:"Karadi",         meaning:"Bear",                  imageUrl:"https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?w=600&auto=format&fit=crop" },
+  { id:"31", malayalam:"പൂച്ച",         phonetic:"Poocha",         meaning:"Cat",                    imageUrl:"https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?w=600&auto=format&fit=crop" },
+  { id:"32", malayalam:"നായ",           phonetic:"Naaya",          meaning:"Dog",                    imageUrl:"https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&auto=format&fit=crop" },
+  { id:"33", malayalam:"ആന",           phonetic:"Aana",           meaning:"Elephant",               imageUrl:"https://images.unsplash.com/photo-1548366086-7f1b76106622?w=600&auto=format&fit=crop" },
+  { id:"34", malayalam:"പശു",           phonetic:"Pashu",          meaning:"Cow",                    imageUrl:"https://images.unsplash.com/photo-1546445814-57d6b8b5b5e6?w=600&auto=format&fit=crop" },
+  { id:"35", malayalam:"കോഴി",          phonetic:"Kozhi",          meaning:"Chicken / Hen",          imageUrl:"https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?w=600&auto=format&fit=crop" },
+  { id:"36", malayalam:"മീൻ",           phonetic:"Meen",           meaning:"Fish",                   imageUrl:"https://images.unsplash.com/photo-1497649153141-7ceef53b2594?w=600&auto=format&fit=crop" },
+  { id:"37", malayalam:"പക്ഷി",         phonetic:"Pakshi",         meaning:"Bird",                   imageUrl:"https://images.unsplash.com/photo-1444464666168-49d633b86797?w=600&auto=format&fit=crop" },
+  { id:"38", malayalam:"ആട്",           phonetic:"Aadu",           meaning:"Goat",                   imageUrl:"https://images.unsplash.com/photo-1524024973431-2ad916746881?w=600&auto=format&fit=crop" },
+  { id:"39", malayalam:"കുതിര",         phonetic:"Kuthira",        meaning:"Horse",                  imageUrl:"https://images.unsplash.com/photo-1553284965-83fd3e82fa5a?w=600&auto=format&fit=crop" },
+  { id:"40", malayalam:"കരടി",          phonetic:"Karadi",         meaning:"Bear",                   imageUrl:"https://images.unsplash.com/photo-1530595467537-0b5996c41f2d?w=600&auto=format&fit=crop" },
   // Food & Drink
-  { id:"41", malayalam:"ഭക്ഷണം",        phonetic:"Bhakshanam",     meaning:"Food",                  imageUrl:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop" },
-  { id:"42", malayalam:"ചോറ്",           phonetic:"Choru",          meaning:"Rice (cooked)",         imageUrl:"https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=600&auto=format&fit=crop" },
-  { id:"43", malayalam:"കറി",           phonetic:"Curry",          meaning:"Curry",                 imageUrl:"https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&auto=format&fit=crop" },
-  { id:"44", malayalam:"ദോശ",           phonetic:"Dosa",           meaning:"Dosa",                  imageUrl:"https://images.unsplash.com/photo-1630383249896-483b5092dbe7?w=600&auto=format&fit=crop" },
-  { id:"45", malayalam:"പഴം",           phonetic:"Pazham",         meaning:"Fruit / Banana",        imageUrl:"https://images.unsplash.com/photo-1528825871115-3581a5387919?w=600&auto=format&fit=crop" },
-  { id:"46", malayalam:"ആപ്പിൾ",         phonetic:"Apple",          meaning:"Apple",                 imageUrl:"https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=600&auto=format&fit=crop" },
-  { id:"47", malayalam:"മാങ്ങ",          phonetic:"Maanga",         meaning:"Mango",                 imageUrl:"https://images.unsplash.com/photo-1553279768-865429fa0078?w=600&auto=format&fit=crop" },
-  { id:"48", malayalam:"നാരങ്ങ",         phonetic:"Naranga",        meaning:"Lemon / Orange",        imageUrl:"https://images.unsplash.com/photo-1547514701-42782101795e?w=600&auto=format&fit=crop" },
-  { id:"49", malayalam:"പാൽ",           phonetic:"Paal",           meaning:"Milk",                  imageUrl:"https://images.unsplash.com/photo-1550583724-b2692b85b150?w=600&auto=format&fit=crop" },
-  { id:"50", malayalam:"ചായ",           phonetic:"Chaya",          meaning:"Tea",                   imageUrl:"https://images.unsplash.com/photo-1564890369478-c89ca6d9cde9?w=600&auto=format&fit=crop" },
-  { id:"51", malayalam:"കാപ്പി",         phonetic:"Kaapi",          meaning:"Coffee",                imageUrl:"https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&auto=format&fit=crop" },
-  { id:"52", malayalam:"ഉപ്പ്",           phonetic:"Uppu",           meaning:"Salt",                  imageUrl:"https://images.unsplash.com/photo-1579628450787-e2b45e4d6e94?w=600&auto=format&fit=crop" },
-  { id:"53", malayalam:"മധുരം",          phonetic:"Madhuram",       meaning:"Sweet / Sugar",         imageUrl:"https://images.unsplash.com/photo-1559181567-c3190bac7e3e?w=600&auto=format&fit=crop" },
-  { id:"54", malayalam:"എണ്ണ",           phonetic:"Enna",           meaning:"Oil",                   imageUrl:"https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=600&auto=format&fit=crop" },
-  { id:"55", malayalam:"ഉള്ളി",          phonetic:"Ulli",           meaning:"Onion",                 imageUrl:"https://images.unsplash.com/photo-1518977822534-7049a61ee0c2?w=600&auto=format&fit=crop" },
+  { id:"41", malayalam:"ഭക്ഷണം",        phonetic:"Bhakshanam",     meaning:"Food",                   imageUrl:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop" },
+  { id:"42", malayalam:"ചോറ്",           phonetic:"Choru",          meaning:"Rice (cooked)",          imageUrl:"https://images.unsplash.com/photo-1536304993881-ff6e9eefa2a6?w=600&auto=format&fit=crop" },
+  { id:"43", malayalam:"കറി",           phonetic:"Curry",          meaning:"Curry",                  imageUrl:"https://images.unsplash.com/photo-1565557623262-b51c2513a641?w=600&auto=format&fit=crop" },
+  { id:"44", malayalam:"ദോശ",           phonetic:"Dosa",           meaning:"Dosa",                   imageUrl:"https://images.unsplash.com/photo-1630383249896-483b5092dbe7?w=600&auto=format&fit=crop" },
+  { id:"45", malayalam:"പഴം",           phonetic:"Pazham",         meaning:"Banana",                 imageUrl:"https://images.unsplash.com/photo-1528825871115-3581a5387919?w=600&auto=format&fit=crop" },
+  { id:"46", malayalam:"ആപ്പിൾ",         phonetic:"Apple",          meaning:"Apple",                  imageUrl:"https://images.unsplash.com/photo-1570913149827-d2ac84ab3f9a?w=600&auto=format&fit=crop" },
+  { id:"47", malayalam:"മാങ്ങ",          phonetic:"Maanga",         meaning:"Mango",                  imageUrl:"https://images.unsplash.com/photo-1553279768-865429fa0078?w=600&auto=format&fit=crop" },
+  { id:"48", malayalam:"നാരങ്ങ",         phonetic:"Naranga",        meaning:"Lemon / Orange",         imageUrl:"https://images.unsplash.com/photo-1511689660979-10d2b1aada49?w=600&auto=format&fit=crop" },
+  { id:"49", malayalam:"പാൽ",           phonetic:"Paal",           meaning:"Milk",                   imageUrl:"https://images.unsplash.com/photo-1550583724-b2692b85b150?w=600&auto=format&fit=crop" },
+  { id:"50", malayalam:"ചായ",           phonetic:"Chaya",          meaning:"Tea",                    imageUrl:"https://images.unsplash.com/photo-1556679343-c7306c1976bc?w=600&auto=format&fit=crop" },
+  { id:"51", malayalam:"കാപ്പി",         phonetic:"Kaapi",          meaning:"Coffee",                 imageUrl:"https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=600&auto=format&fit=crop" },
+  { id:"52", malayalam:"ഉപ്പ്",           phonetic:"Uppu",           meaning:"Salt",                   imageUrl:"https://images.unsplash.com/photo-1509483650980-8b68d4e3e6df?w=600&auto=format&fit=crop" },
+  { id:"53", malayalam:"മധുരം",          phonetic:"Madhuram",       meaning:"Sweet / Sugar",          imageUrl:"https://images.unsplash.com/photo-1551892374-ecf8754cf8b0?w=600&auto=format&fit=crop" },
+  { id:"54", malayalam:"എണ്ണ",           phonetic:"Enna",           meaning:"Oil",                    imageUrl:"https://images.unsplash.com/photo-1474979266404-7eaacbcd87c5?w=600&auto=format&fit=crop" },
+  { id:"55", malayalam:"ഉള്ളി",          phonetic:"Ulli",           meaning:"Onion",                  imageUrl:"https://images.unsplash.com/photo-1518977822534-7049a61ee0c2?w=600&auto=format&fit=crop" },
   // Colors
-  { id:"56", malayalam:"ചുവപ്പ്",         phonetic:"Chuvappu",       meaning:"Red",                   imageUrl:"https://images.unsplash.com/photo-1513542789411-b6a5d4f31634?w=600&auto=format&fit=crop" },
-  { id:"57", malayalam:"നീല",           phonetic:"Neela",          meaning:"Blue",                  imageUrl:"https://images.unsplash.com/photo-1549924231-f129b911e442?w=600&auto=format&fit=crop" },
-  { id:"58", malayalam:"പച്ച",           phonetic:"Pacha",          meaning:"Green",                 imageUrl:"https://images.unsplash.com/photo-1461354464878-ad92f492a5a0?w=600&auto=format&fit=crop" },
-  { id:"59", malayalam:"മഞ്ഞ",           phonetic:"Manja",          meaning:"Yellow",                imageUrl:"https://images.unsplash.com/photo-1502691876148-a84978e59af8?w=600&auto=format&fit=crop" },
-  { id:"60", malayalam:"വെള്ള",          phonetic:"Vella",          meaning:"White",                 imageUrl:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop" },
-  { id:"61", malayalam:"കറുപ്പ്",         phonetic:"Karuppu",        meaning:"Black",                 imageUrl:"https://images.unsplash.com/photo-1553356084-58ef4a67b2a7?w=600&auto=format&fit=crop" },
-  { id:"62", malayalam:"ഓറഞ്ച്",         phonetic:"Orange",         meaning:"Orange (color)",        imageUrl:"https://images.unsplash.com/photo-1557800636-894a64c1696f?w=600&auto=format&fit=crop" },
-  { id:"63", malayalam:"പിങ്ക്",          phonetic:"Pink",           meaning:"Pink",                  imageUrl:"https://images.unsplash.com/photo-1563808944-ebf2261e7ac0?w=600&auto=format&fit=crop" },
+  { id:"56", malayalam:"ചുവപ്പ്",         phonetic:"Chuvappu",       meaning:"Red",                    imageUrl:"https://images.unsplash.com/photo-1494253109108-2e30c049369b?w=600&auto=format&fit=crop" },
+  { id:"57", malayalam:"നീല",           phonetic:"Neela",          meaning:"Blue",                   imageUrl:"https://images.unsplash.com/photo-1529988885170-6dc8ce34a3b3?w=600&auto=format&fit=crop" },
+  { id:"58", malayalam:"പച്ച",           phonetic:"Pacha",          meaning:"Green",                  imageUrl:"https://images.unsplash.com/photo-1504701954957-2010ec3bcec1?w=600&auto=format&fit=crop" },
+  { id:"59", malayalam:"മഞ്ഞ",           phonetic:"Manja",          meaning:"Yellow",                 imageUrl:"https://images.unsplash.com/photo-1497250681960-ef046c08a56e?w=600&auto=format&fit=crop" },
+  { id:"60", malayalam:"വെള്ള",          phonetic:"Vella",          meaning:"White",                  imageUrl:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop" },
+  { id:"61", malayalam:"കറുപ്പ്",         phonetic:"Karuppu",        meaning:"Black",                  imageUrl:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop" },
+  { id:"62", malayalam:"ഓറഞ്ച്",         phonetic:"Orange",         meaning:"Orange (color)",         imageUrl:"https://images.unsplash.com/photo-1557800636-894a64c1696f?w=600&auto=format&fit=crop" },
+  { id:"63", malayalam:"പിങ്ക്",          phonetic:"Pink",           meaning:"Pink",                   imageUrl:"https://images.unsplash.com/photo-1490750967815-24419511126e?w=600&auto=format&fit=crop" },
   // Numbers
-  { id:"64", malayalam:"ഒന്ന്",           phonetic:"Onnu",           meaning:"One (1)",               imageUrl:"https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=600&auto=format&fit=crop" },
-  { id:"65", malayalam:"രണ്ട്",           phonetic:"Randu",          meaning:"Two (2)",               imageUrl:"https://images.unsplash.com/photo-1530982011887-3cc11cc85693?w=600&auto=format&fit=crop" },
-  { id:"66", malayalam:"മൂന്ന്",           phonetic:"Moonnu",         meaning:"Three (3)",             imageUrl:"https://images.unsplash.com/photo-1519699047748-de8e457a634e?w=600&auto=format&fit=crop" },
-  { id:"67", malayalam:"നാല്",            phonetic:"Naalu",          meaning:"Four (4)",              imageUrl:"https://images.unsplash.com/photo-1518791841217-8f162f1912da?w=600&auto=format&fit=crop" },
-  { id:"68", malayalam:"അഞ്ച്",           phonetic:"Anchu",          meaning:"Five (5)",              imageUrl:"https://images.unsplash.com/photo-1532035900-7157c0ae2c0e?w=600&auto=format&fit=crop" },
-  { id:"69", malayalam:"ആറ്",             phonetic:"Aaru",           meaning:"Six (6)",               imageUrl:"https://images.unsplash.com/photo-1560807707-8cc77767d783?w=600&auto=format&fit=crop" },
-  { id:"70", malayalam:"ഏഴ്",             phonetic:"Ezhu",           meaning:"Seven (7)",             imageUrl:"https://images.unsplash.com/photo-1457296898342-cdd24585d095?w=600&auto=format&fit=crop" },
-  { id:"71", malayalam:"എട്ട്",            phonetic:"Ettu",           meaning:"Eight (8)",             imageUrl:"https://images.unsplash.com/photo-1531746790731-6c087fecd65a?w=600&auto=format&fit=crop" },
-  { id:"72", malayalam:"ഒമ്പത്",          phonetic:"Ombath",         meaning:"Nine (9)",              imageUrl:"https://images.unsplash.com/photo-1549396535-c11d5c55b9df?w=600&auto=format&fit=crop" },
-  { id:"73", malayalam:"പത്ത്",            phonetic:"Pathu",          meaning:"Ten (10)",              imageUrl:"https://images.unsplash.com/photo-1521119989659-a83eee488004?w=600&auto=format&fit=crop" },
+  { id:"64", malayalam:"ഒന്ന്",           phonetic:"Onnu",           meaning:"One (1)",                imageUrl:"https://images.unsplash.com/photo-1509228468518-180dd4864904?w=600&auto=format&fit=crop" },
+  { id:"65", malayalam:"രണ്ട്",           phonetic:"Randu",          meaning:"Two (2)",                imageUrl:"https://images.unsplash.com/photo-1530082054688-50d5f2a58aad?w=600&auto=format&fit=crop" },
+  { id:"66", malayalam:"മൂന്ന്",           phonetic:"Moonnu",         meaning:"Three (3)",              imageUrl:"https://images.unsplash.com/photo-1461003410281-39c95e060f6f?w=600&auto=format&fit=crop" },
+  { id:"67", malayalam:"നാല്",            phonetic:"Naalu",          meaning:"Four (4)",               imageUrl:"https://images.unsplash.com/photo-1518791841217-8f162f1912da?w=600&auto=format&fit=crop" },
+  { id:"68", malayalam:"അഞ്ച്",           phonetic:"Anchu",          meaning:"Five (5)",               imageUrl:"https://images.unsplash.com/photo-1513788957568-43e5b4e5c4a5?w=600&auto=format&fit=crop" },
+  { id:"69", malayalam:"ആറ്",             phonetic:"Aaru",           meaning:"Six (6)",                imageUrl:"https://images.unsplash.com/photo-1560807707-8cc77767d783?w=600&auto=format&fit=crop" },
+  { id:"70", malayalam:"ഏഴ്",             phonetic:"Ezhu",           meaning:"Seven (7)",              imageUrl:"https://images.unsplash.com/photo-1457296898342-cdd24585d095?w=600&auto=format&fit=crop" },
+  { id:"71", malayalam:"എട്ട്",            phonetic:"Ettu",           meaning:"Eight (8)",              imageUrl:"https://images.unsplash.com/photo-1531746790731-6c087fecd65a?w=600&auto=format&fit=crop" },
+  { id:"72", malayalam:"ഒമ്പത്",          phonetic:"Ombath",         meaning:"Nine (9)",               imageUrl:"https://images.unsplash.com/photo-1549396535-c11d5c55b9df?w=600&auto=format&fit=crop" },
+  { id:"73", malayalam:"പത്ത്",            phonetic:"Pathu",          meaning:"Ten (10)",               imageUrl:"https://images.unsplash.com/photo-1521119989659-a83eee488004?w=600&auto=format&fit=crop" },
   // Body Parts
-  { id:"74", malayalam:"കൈ",             phonetic:"Kai",            meaning:"Hand",                  imageUrl:"https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&auto=format&fit=crop" },
-  { id:"75", malayalam:"കാൽ",            phonetic:"Kaal",           meaning:"Leg / Foot",            imageUrl:"https://images.unsplash.com/photo-1571677246347-5040036b95cc?w=600&auto=format&fit=crop" },
-  { id:"76", malayalam:"കണ്ണ്",           phonetic:"Kannu",          meaning:"Eye",                   imageUrl:"https://images.unsplash.com/photo-1559941727-6fb446e7e8ae?w=600&auto=format&fit=crop" },
-  { id:"77", malayalam:"ചെവി",           phonetic:"Chevi",          meaning:"Ear",                   imageUrl:"https://images.unsplash.com/photo-1583195763974-fc9ec83a8bcd?w=600&auto=format&fit=crop" },
-  { id:"78", malayalam:"മൂക്ക്",           phonetic:"Mookku",         meaning:"Nose",                  imageUrl:"https://images.unsplash.com/photo-1608889476518-738c9b1dcef7?w=600&auto=format&fit=crop" },
-  { id:"79", malayalam:"വായ",            phonetic:"Vaaya",          meaning:"Mouth",                 imageUrl:"https://images.unsplash.com/photo-1602607144090-5ab2e97b89bd?w=600&auto=format&fit=crop" },
-  { id:"80", malayalam:"തല",            phonetic:"Thala",          meaning:"Head",                  imageUrl:"https://images.unsplash.com/photo-1541976590-713941681591?w=600&auto=format&fit=crop" },
-  { id:"81", malayalam:"മുടി",            phonetic:"Mudi",           meaning:"Hair",                  imageUrl:"https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop" },
-  { id:"82", malayalam:"ചിരി",            phonetic:"Chiri",          meaning:"Smile / Laugh",         imageUrl:"https://images.unsplash.com/photo-1542103749-8ef59b94f47e?w=600&auto=format&fit=crop" },
+  { id:"74", malayalam:"കൈ",             phonetic:"Kai",            meaning:"Hand",                   imageUrl:"https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=600&auto=format&fit=crop" },
+  { id:"75", malayalam:"കാൽ",            phonetic:"Kaal",           meaning:"Leg / Foot",             imageUrl:"https://images.unsplash.com/photo-1571677246347-5040036b95cc?w=600&auto=format&fit=crop" },
+  { id:"76", malayalam:"കണ്ണ്",           phonetic:"Kannu",          meaning:"Eye",                    imageUrl:"https://images.unsplash.com/photo-1559941727-6fb446e7e8ae?w=600&auto=format&fit=crop" },
+  { id:"77", malayalam:"ചെവി",           phonetic:"Chevi",          meaning:"Ear",                    imageUrl:"https://images.unsplash.com/photo-1583195763974-fc9ec83a8bcd?w=600&auto=format&fit=crop" },
+  { id:"78", malayalam:"മൂക്ക്",           phonetic:"Mookku",         meaning:"Nose",                   imageUrl:"https://images.unsplash.com/photo-1608889476518-738c9b1dcef7?w=600&auto=format&fit=crop" },
+  { id:"79", malayalam:"വായ",            phonetic:"Vaaya",          meaning:"Mouth",                  imageUrl:"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&auto=format&fit=crop" },
+  { id:"80", malayalam:"തല",            phonetic:"Thala",          meaning:"Head",                   imageUrl:"https://images.unsplash.com/photo-1541976590-713941681591?w=600&auto=format&fit=crop" },
+  { id:"81", malayalam:"മുടി",            phonetic:"Mudi",           meaning:"Hair",                   imageUrl:"https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&auto=format&fit=crop" },
+  { id:"82", malayalam:"ചിരി",            phonetic:"Chiri",          meaning:"Smile",                  imageUrl:"https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=600&auto=format&fit=crop" },
   // Home & Objects
-  { id:"83", malayalam:"വീട്",            phonetic:"Veedu",          meaning:"House",                 imageUrl:"https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=600&auto=format&fit=crop" },
-  { id:"84", malayalam:"കതക്",           phonetic:"Kathak",         meaning:"Door",                  imageUrl:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop" },
-  { id:"85", malayalam:"ജനാല",           phonetic:"Janala",         meaning:"Window",                imageUrl:"https://images.unsplash.com/photo-1527427337751-fdca2f128ce5?w=600&auto=format&fit=crop" },
-  { id:"86", malayalam:"മേശ",            phonetic:"Mesha",          meaning:"Table",                 imageUrl:"https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&auto=format&fit=crop" },
-  { id:"87", malayalam:"കട്ടിൽ",           phonetic:"Kattil",         meaning:"Bed",                   imageUrl:"https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&auto=format&fit=crop" },
-  { id:"88", malayalam:"കസേര",           phonetic:"Kasera",         meaning:"Chair",                 imageUrl:"https://images.unsplash.com/photo-1561677978-583a6c6bd5f7?w=600&auto=format&fit=crop" },
-  { id:"89", malayalam:"പുസ്തകം",         phonetic:"Pusthakam",      meaning:"Book",                  imageUrl:"https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&auto=format&fit=crop" },
-  { id:"90", malayalam:"പേന",            phonetic:"Pena",           meaning:"Pen",                   imageUrl:"https://images.unsplash.com/photo-1585336261022-680e295ce3fe?w=600&auto=format&fit=crop" },
-  { id:"91", malayalam:"ഫോൺ",            phonetic:"Phone",          meaning:"Phone",                 imageUrl:"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop" },
-  { id:"92", malayalam:"ഘടികാരം",         phonetic:"Ghadeekaram",    meaning:"Clock / Watch",         imageUrl:"https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?w=600&auto=format&fit=crop" },
-  { id:"93", malayalam:"കണ്ണാടി",          phonetic:"Kannadi",        meaning:"Mirror / Glass",        imageUrl:"https://images.unsplash.com/photo-1588435062010-4e8c9b3b9bca?w=600&auto=format&fit=crop" },
-  { id:"94", malayalam:"വിളക്ക്",          phonetic:"Vilakku",        meaning:"Lamp / Light",          imageUrl:"https://images.unsplash.com/photo-1513506003901-1e6a35068433?w=600&auto=format&fit=crop" },
-  { id:"95", malayalam:"പൂട്ട്",           phonetic:"Poottu",         meaning:"Lock",                  imageUrl:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop" },
+  { id:"83", malayalam:"വീട്",            phonetic:"Veedu",          meaning:"House",                  imageUrl:"https://images.unsplash.com/photo-1518780664697-55e3ad937233?w=600&auto=format&fit=crop" },
+  { id:"84", malayalam:"കതക്",           phonetic:"Kathak",         meaning:"Door",                   imageUrl:"https://images.unsplash.com/photo-1558618047-3c8c76ca7d13?w=600&auto=format&fit=crop" },
+  { id:"85", malayalam:"ജനാല",           phonetic:"Janala",         meaning:"Window",                 imageUrl:"https://images.unsplash.com/photo-1527427337751-fdca2f128ce5?w=600&auto=format&fit=crop" },
+  { id:"86", malayalam:"മേശ",            phonetic:"Mesha",          meaning:"Table",                  imageUrl:"https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&auto=format&fit=crop" },
+  { id:"87", malayalam:"കട്ടിൽ",           phonetic:"Kattil",         meaning:"Bed",                    imageUrl:"https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&auto=format&fit=crop" },
+  { id:"88", malayalam:"കസേര",           phonetic:"Kasera",         meaning:"Chair",                  imageUrl:"https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=600&auto=format&fit=crop" },
+  { id:"89", malayalam:"പുസ്തകം",         phonetic:"Pusthakam",      meaning:"Book",                   imageUrl:"https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&auto=format&fit=crop" },
+  { id:"90", malayalam:"പേന",            phonetic:"Pena",           meaning:"Pen",                    imageUrl:"https://images.unsplash.com/photo-1583485088034-697b5bc54ccd?w=600&auto=format&fit=crop" },
+  { id:"91", malayalam:"ഫോൺ",            phonetic:"Phone",          meaning:"Phone",                  imageUrl:"https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop" },
+  { id:"92", malayalam:"ഘടികാരം",         phonetic:"Ghadeekaram",    meaning:"Clock / Watch",          imageUrl:"https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop" },
+  { id:"93", malayalam:"കണ്ണാടി",          phonetic:"Kannadi",        meaning:"Mirror",                 imageUrl:"https://images.unsplash.com/photo-1556909114-44e3e70034e2?w=600&auto=format&fit=crop" },
+  { id:"94", malayalam:"വിളക്ക്",          phonetic:"Vilakku",        meaning:"Lamp / Light",           imageUrl:"https://images.unsplash.com/photo-1513506003901-1e6a35068433?w=600&auto=format&fit=crop" },
+  { id:"95", malayalam:"പൂട്ട്",           phonetic:"Poottu",         meaning:"Lock",                   imageUrl:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop" },
   // Clothing
-  { id:"96", malayalam:"ഉടുപ്പ്",          phonetic:"Uduppu",         meaning:"Dress / Clothes",       imageUrl:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop" },
-  { id:"97", malayalam:"ചെരിപ്പ്",         phonetic:"Cherippu",       meaning:"Slippers / Sandal",     imageUrl:"https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&auto=format&fit=crop" },
-  { id:"98", malayalam:"ബാഗ്",            phonetic:"Bag",            meaning:"Bag",                   imageUrl:"https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&auto=format&fit=crop" },
-  { id:"99", malayalam:"കുടക്",           phonetic:"Kudakku",        meaning:"Umbrella",              imageUrl:"https://images.unsplash.com/photo-1561059488-916d69792237?w=600&auto=format&fit=crop" },
-  // Places
-  { id:"100", malayalam:"വഴി",           phonetic:"Vazhi",          meaning:"Road / Path",           imageUrl:"https://images.unsplash.com/photo-1519003300449-424ad0405076?w=600&auto=format&fit=crop" },
-  { id:"101", malayalam:"ആശുപത്രി",      phonetic:"Aashupathri",    meaning:"Hospital",              imageUrl:"https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&auto=format&fit=crop" },
-  { id:"102", malayalam:"സ്കൂൾ",          phonetic:"School",         meaning:"School",                imageUrl:"https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&auto=format&fit=crop" },
-  { id:"103", malayalam:"കട",            phonetic:"Kada",           meaning:"Shop / Store",          imageUrl:"https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&auto=format&fit=crop" },
-  { id:"104", malayalam:"ബസ്",            phonetic:"Bus",            meaning:"Bus",                   imageUrl:"https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=600&auto=format&fit=crop" },
-  { id:"105", malayalam:"ട്രെയിൻ",        phonetic:"Train",          meaning:"Train",                 imageUrl:"https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=600&auto=format&fit=crop" },
-  { id:"106", malayalam:"വിമാനം",         phonetic:"Vimanam",        meaning:"Aeroplane",             imageUrl:"https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&auto=format&fit=crop" },
-  { id:"107", malayalam:"ബോട്ട്",          phonetic:"Boat",           meaning:"Boat",                  imageUrl:"https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?w=600&auto=format&fit=crop" },
-  // Time & Calendar
-  { id:"108", malayalam:"ദിവസം",         phonetic:"Divasam",        meaning:"Day",                   imageUrl:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&auto=format&fit=crop" },
-  { id:"109", malayalam:"രാത്രി",          phonetic:"Raathri",        meaning:"Night",                 imageUrl:"https://images.unsplash.com/photo-1507400492013-162706c8c05e?w=600&auto=format&fit=crop" },
-  { id:"110", malayalam:"ഇന്ന്",           phonetic:"Innu",           meaning:"Today",                 imageUrl:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&auto=format&fit=crop" },
-  { id:"111", malayalam:"നാളെ",           phonetic:"Naale",          meaning:"Tomorrow",              imageUrl:"https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&auto=format&fit=crop" },
-  { id:"112", malayalam:"ഇന്നലെ",         phonetic:"Innale",         meaning:"Yesterday",             imageUrl:"https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=600&auto=format&fit=crop" },
-  { id:"113", malayalam:"ആഴ്ച",           phonetic:"Aazcha",         meaning:"Week",                  imageUrl:"https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=600&auto=format&fit=crop" },
-  { id:"114", malayalam:"മാസം",           phonetic:"Maasam",         meaning:"Month",                 imageUrl:"https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600&auto=format&fit=crop" },
-  { id:"115", malayalam:"വർഷം",          phonetic:"Varsham",        meaning:"Year",                  imageUrl:"https://images.unsplash.com/photo-1513031300226-c8fb12de9ade?w=600&auto=format&fit=crop" },
+  { id:"96", malayalam:"ഉടുപ്പ്",          phonetic:"Uduppu",         meaning:"Dress / Clothes",        imageUrl:"https://images.unsplash.com/photo-1445205170230-053b83016050?w=600&auto=format&fit=crop" },
+  { id:"97", malayalam:"ചെരിപ്പ്",         phonetic:"Cherippu",       meaning:"Slippers / Sandal",      imageUrl:"https://images.unsplash.com/photo-1543163521-1bf539c55dd2?w=600&auto=format&fit=crop" },
+  { id:"98", malayalam:"ബാഗ്",            phonetic:"Bag",            meaning:"Bag",                    imageUrl:"https://images.unsplash.com/photo-1553062407-98eeb64c6a62?w=600&auto=format&fit=crop" },
+  { id:"99", malayalam:"കുടക്",           phonetic:"Kudakku",        meaning:"Umbrella",               imageUrl:"https://images.unsplash.com/photo-1476477579217-30c55d5c6a0f?w=600&auto=format&fit=crop" },
+  // Transport & Places
+  { id:"100", malayalam:"വഴി",           phonetic:"Vazhi",          meaning:"Road / Path",            imageUrl:"https://images.unsplash.com/photo-1519003300449-424ad0405076?w=600&auto=format&fit=crop" },
+  { id:"101", malayalam:"ആശുപത്രി",      phonetic:"Aashupathri",    meaning:"Hospital",               imageUrl:"https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&auto=format&fit=crop" },
+  { id:"102", malayalam:"സ്കൂൾ",          phonetic:"School",         meaning:"School",                 imageUrl:"https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&auto=format&fit=crop" },
+  { id:"103", malayalam:"കട",            phonetic:"Kada",           meaning:"Shop / Store",           imageUrl:"https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&auto=format&fit=crop" },
+  { id:"104", malayalam:"ബസ്",            phonetic:"Bus",            meaning:"Bus",                    imageUrl:"https://images.unsplash.com/photo-1570125909232-eb263c188f7e?w=600&auto=format&fit=crop" },
+  { id:"105", malayalam:"ട്രെയിൻ",        phonetic:"Train",          meaning:"Train",                  imageUrl:"https://images.unsplash.com/photo-1474487548417-781cb71495f3?w=600&auto=format&fit=crop" },
+  { id:"106", malayalam:"വിമാനം",         phonetic:"Vimanam",        meaning:"Aeroplane",              imageUrl:"https://images.unsplash.com/photo-1436491865332-7a61a109cc05?w=600&auto=format&fit=crop" },
+  { id:"107", malayalam:"ബോട്ട്",          phonetic:"Boat",           meaning:"Boat",                   imageUrl:"https://images.unsplash.com/photo-1544551763-77ef2d0cfc6c?w=600&auto=format&fit=crop" },
+  // Time
+  { id:"108", malayalam:"ദിവസം",         phonetic:"Divasam",        meaning:"Day",                    imageUrl:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&auto=format&fit=crop" },
+  { id:"109", malayalam:"രാത്രി",          phonetic:"Raathri",        meaning:"Night",                  imageUrl:"https://images.unsplash.com/photo-1507400492013-162706c8c05e?w=600&auto=format&fit=crop" },
+  { id:"110", malayalam:"ഇന്ന്",           phonetic:"Innu",           meaning:"Today",                  imageUrl:"https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&auto=format&fit=crop" },
+  { id:"111", malayalam:"നാളെ",           phonetic:"Naale",          meaning:"Tomorrow",               imageUrl:"https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=600&auto=format&fit=crop" },
+  { id:"112", malayalam:"ഇന്നലെ",         phonetic:"Innale",         meaning:"Yesterday",              imageUrl:"https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=600&auto=format&fit=crop" },
+  { id:"113", malayalam:"ആഴ്ച",           phonetic:"Aazcha",         meaning:"Week",                   imageUrl:"https://images.unsplash.com/photo-1506784983877-45594efa4cbe?w=600&auto=format&fit=crop" },
+  { id:"114", malayalam:"മാസം",           phonetic:"Maasam",         meaning:"Month",                  imageUrl:"https://images.unsplash.com/photo-1484800406197-2a6f9b9a6b4c?w=600&auto=format&fit=crop" },
+  { id:"115", malayalam:"വർഷം",          phonetic:"Varsham",        meaning:"Year",                   imageUrl:"https://images.unsplash.com/photo-1513031300226-c8fb12de9ade?w=600&auto=format&fit=crop" },
   // Adjectives
-  { id:"116", malayalam:"നല്ല",           phonetic:"Nalla",          meaning:"Good",                  imageUrl:"https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=600&auto=format&fit=crop" },
-  { id:"117", malayalam:"ചീത്ത",          phonetic:"Cheetha",        meaning:"Bad",                   imageUrl:"https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=600&auto=format&fit=crop" },
-  { id:"118", malayalam:"വലിയ",          phonetic:"Valiya",         meaning:"Big / Large",           imageUrl:"https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=600&auto=format&fit=crop" },
-  { id:"119", malayalam:"ചെറിയ",         phonetic:"Cheriya",        meaning:"Small / Little",        imageUrl:"https://images.unsplash.com/photo-1484069560501-87d72b0e3d25?w=600&auto=format&fit=crop" },
-  { id:"120", malayalam:"ചൂട്",           phonetic:"Choodu",         meaning:"Hot",                   imageUrl:"https://images.unsplash.com/photo-1525351326368-efbb5cb6814d?w=600&auto=format&fit=crop" },
-  { id:"121", malayalam:"തണുപ്പ്",         phonetic:"Thanuppu",       meaning:"Cold",                  imageUrl:"https://images.unsplash.com/photo-1457269449834-928af64c684d?w=600&auto=format&fit=crop" },
-  { id:"122", malayalam:"സുന്ദരം",        phonetic:"Sundharam",      meaning:"Beautiful",             imageUrl:"https://images.unsplash.com/photo-1490750967815-24419511126e?w=600&auto=format&fit=crop" },
-  { id:"123", malayalam:"പഴയ",           phonetic:"Pazhaya",        meaning:"Old",                   imageUrl:"https://images.unsplash.com/photo-1582979512210-99b6a53386f9?w=600&auto=format&fit=crop" },
-  { id:"124", malayalam:"പുതിയ",          phonetic:"Puthiya",        meaning:"New",                   imageUrl:"https://images.unsplash.com/photo-1485217988980-11786ced9454?w=600&auto=format&fit=crop" },
-  { id:"125", malayalam:"വേഗം",          phonetic:"Vegam",          meaning:"Fast / Quick",          imageUrl:"https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=600&auto=format&fit=crop" },
-  { id:"126", malayalam:"പതുക്കെ",        phonetic:"Pathukke",       meaning:"Slow / Slowly",         imageUrl:"https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=600&auto=format&fit=crop" },
-  { id:"127", malayalam:"നീളം",           phonetic:"Neelam",         meaning:"Long",                  imageUrl:"https://images.unsplash.com/photo-1449034446853-66c86144b0ad?w=600&auto=format&fit=crop" },
-  { id:"128", malayalam:"ഭംഗി",           phonetic:"Bhangi",         meaning:"Beauty / Pretty",       imageUrl:"https://images.unsplash.com/photo-1490750967815-24419511126e?w=600&auto=format&fit=crop" },
+  { id:"116", malayalam:"നല്ല",           phonetic:"Nalla",          meaning:"Good",                   imageUrl:"https://images.unsplash.com/photo-1531747056595-07f6cbbe10ad?w=600&auto=format&fit=crop" },
+  { id:"117", malayalam:"ചീത്ത",          phonetic:"Cheetha",        meaning:"Bad",                    imageUrl:"https://images.unsplash.com/photo-1542173045-3bc6e77ad4fa?w=600&auto=format&fit=crop" },
+  { id:"118", malayalam:"വലിയ",          phonetic:"Valiya",         meaning:"Big / Large",            imageUrl:"https://images.unsplash.com/photo-1548366086-7f1b76106622?w=600&auto=format&fit=crop" },
+  { id:"119", malayalam:"ചെറിയ",         phonetic:"Cheriya",        meaning:"Small / Little",         imageUrl:"https://images.unsplash.com/photo-1555252333-9f8e92e65df9?w=600&auto=format&fit=crop" },
+  { id:"120", malayalam:"ചൂട്",           phonetic:"Choodu",         meaning:"Hot",                    imageUrl:"https://images.unsplash.com/photo-1525351326368-efbb5cb6814d?w=600&auto=format&fit=crop" },
+  { id:"121", malayalam:"തണുപ്പ്",         phonetic:"Thanuppu",       meaning:"Cold",                   imageUrl:"https://images.unsplash.com/photo-1457269449834-928af64c684d?w=600&auto=format&fit=crop" },
+  { id:"122", malayalam:"സുന്ദരം",        phonetic:"Sundharam",      meaning:"Beautiful",              imageUrl:"https://images.unsplash.com/photo-1490750967815-24419511126e?w=600&auto=format&fit=crop" },
+  { id:"123", malayalam:"പഴയ",           phonetic:"Pazhaya",        meaning:"Old",                    imageUrl:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop" },
+  { id:"124", malayalam:"പുതിയ",          phonetic:"Puthiya",        meaning:"New",                    imageUrl:"https://images.unsplash.com/photo-1485217988980-11786ced9454?w=600&auto=format&fit=crop" },
+  { id:"125", malayalam:"വേഗം",          phonetic:"Vegam",          meaning:"Fast / Quick",           imageUrl:"https://images.unsplash.com/photo-1494976388531-d1058494cdd8?w=600&auto=format&fit=crop" },
+  { id:"126", malayalam:"പതുക്കെ",        phonetic:"Pathukke",       meaning:"Slow",                   imageUrl:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop" },
+  { id:"127", malayalam:"നീളം",           phonetic:"Neelam",         meaning:"Long",                   imageUrl:"https://images.unsplash.com/photo-1476673160081-cf065607f449?w=600&auto=format&fit=crop" },
+  { id:"128", malayalam:"ഭംഗി",           phonetic:"Bhangi",         meaning:"Beauty / Pretty",        imageUrl:"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&auto=format&fit=crop" },
   // Emotions
-  { id:"129", malayalam:"സന്തോഷം",       phonetic:"Santhosham",     meaning:"Happiness / Joy",       imageUrl:"https://images.unsplash.com/photo-1531746790731-6c087fecd65a?w=600&auto=format&fit=crop" },
-  { id:"130", malayalam:"സങ്കടം",         phonetic:"Sankadham",      meaning:"Sadness / Sorrow",      imageUrl:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop" },
-  { id:"131", malayalam:"പ്രേമം",          phonetic:"Premam",         meaning:"Love",                  imageUrl:"https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&auto=format&fit=crop" },
-  { id:"132", malayalam:"ദേഷ്യം",          phonetic:"Dheshyam",       meaning:"Anger",                 imageUrl:"https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=600&auto=format&fit=crop" },
-  { id:"133", malayalam:"ഭയം",            phonetic:"Bhayam",         meaning:"Fear",                  imageUrl:"https://images.unsplash.com/photo-1529626455594-4ff0802cfb7e?w=600&auto=format&fit=crop" },
-  { id:"134", malayalam:"ക്ഷീണം",          phonetic:"Kshenam",        meaning:"Tiredness",             imageUrl:"https://images.unsplash.com/photo-1508739773434-c26b3d09e071?w=600&auto=format&fit=crop" },
-  { id:"135", malayalam:"വിശപ്പ്",         phonetic:"Vishappu",       meaning:"Hunger",                imageUrl:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop" },
-  { id:"136", malayalam:"ദാഹം",           phonetic:"Dhaham",         meaning:"Thirst",                imageUrl:"https://images.unsplash.com/photo-1471811423277-28562725e6e2?w=600&auto=format&fit=crop" },
-  // Verbs (simple)
-  { id:"137", malayalam:"പഠിക്കുക",       phonetic:"Padikkuka",      meaning:"To Study / Learn",      imageUrl:"https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&auto=format&fit=crop" },
-  { id:"138", malayalam:"ഉറങ്ങുക",        phonetic:"Uranguka",       meaning:"To Sleep",              imageUrl:"https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=600&auto=format&fit=crop" },
-  { id:"139", malayalam:"ഭക്ഷിക്കുക",     phonetic:"Bhakshikkuka",   meaning:"To Eat",                imageUrl:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop" },
-  { id:"140", malayalam:"കുടിക്കുക",       phonetic:"Kudikkuka",      meaning:"To Drink",              imageUrl:"https://images.unsplash.com/photo-1471811423277-28562725e6e2?w=600&auto=format&fit=crop" },
-  { id:"141", malayalam:"നടക്കുക",        phonetic:"Nadakkuka",      meaning:"To Walk",               imageUrl:"https://images.unsplash.com/photo-1476611338391-6f395a0ebc7b?w=600&auto=format&fit=crop" },
-  { id:"142", malayalam:"ഓടുക",          phonetic:"Oduka",          meaning:"To Run",                imageUrl:"https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=600&auto=format&fit=crop" },
-  { id:"143", malayalam:"കാണുക",         phonetic:"Kaanuka",        meaning:"To See / Watch",        imageUrl:"https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&auto=format&fit=crop" },
-  { id:"144", malayalam:"കേൾക്കുക",       phonetic:"Keelkkuka",      meaning:"To Hear / Listen",      imageUrl:"https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=600&auto=format&fit=crop" },
-  { id:"145", malayalam:"സംസാരിക്കുക",   phonetic:"Samsaarikkuka",  meaning:"To Speak / Talk",       imageUrl:"https://images.unsplash.com/photo-1573497161161-c3e73707e25c?w=600&auto=format&fit=crop" },
-  { id:"146", malayalam:"ചിരിക്കുക",      phonetic:"Chirikkuka",     meaning:"To Laugh / Smile",      imageUrl:"https://images.unsplash.com/photo-1542103749-8ef59b94f47e?w=600&auto=format&fit=crop" },
-  { id:"147", malayalam:"കളിക്കുക",       phonetic:"Kalikkuka",      meaning:"To Play",               imageUrl:"https://images.unsplash.com/photo-1472162072942-cd5147eb3902?w=600&auto=format&fit=crop" },
-  { id:"148", malayalam:"പോകുക",         phonetic:"Pokuka",         meaning:"To Go",                 imageUrl:"https://images.unsplash.com/photo-1519003300449-424ad0405076?w=600&auto=format&fit=crop" },
-  { id:"149", malayalam:"വരുക",          phonetic:"Varuka",         meaning:"To Come",               imageUrl:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop" },
-  { id:"150", malayalam:"നോക്കുക",        phonetic:"Nokkuka",        meaning:"To Look",               imageUrl:"https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&auto=format&fit=crop" },
-  // More words
-  { id:"151", malayalam:"പേര്",           phonetic:"Peru",           meaning:"Name",                  imageUrl:"https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=600&auto=format&fit=crop" },
-  { id:"152", malayalam:"ഭാഷ",           phonetic:"Bhasha",         meaning:"Language",              imageUrl:"https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=600&auto=format&fit=crop" },
-  { id:"153", malayalam:"മലയാളം",        phonetic:"Malayalam",      meaning:"Malayalam (language)",  imageUrl:"https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&auto=format&fit=crop" },
-  { id:"154", malayalam:"കേരളം",          phonetic:"Kerala",         meaning:"Kerala (state)",        imageUrl:"https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=600&auto=format&fit=crop" },
-  { id:"155", malayalam:"ആരോഗ്യം",       phonetic:"Aarogyam",       meaning:"Health",                imageUrl:"https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=600&auto=format&fit=crop" },
-  { id:"156", malayalam:"ഡോക്ടർ",        phonetic:"Doctor",         meaning:"Doctor",                imageUrl:"https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=600&auto=format&fit=crop" },
-  { id:"157", malayalam:"സ്നേഹം",         phonetic:"Sneham",         meaning:"Affection / Love",      imageUrl:"https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&auto=format&fit=crop" },
-  { id:"158", malayalam:"കൂട്ടുകാരൻ",    phonetic:"Koottukaaran",   meaning:"Friend (male)",         imageUrl:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&auto=format&fit=crop" },
-  { id:"159", malayalam:"കൂട്ടുകാരി",    phonetic:"Koottukaari",    meaning:"Friend (female)",       imageUrl:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&auto=format&fit=crop" },
-  { id:"160", malayalam:"ആകാശം",         phonetic:"Akasham",        meaning:"Sky / Space",           imageUrl:"https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&auto=format&fit=crop" },
-  { id:"161", malayalam:"മഞ്ഞ്",           phonetic:"Manju",          meaning:"Snow / Frost",          imageUrl:"https://images.unsplash.com/photo-1457269449834-928af64c684d?w=600&auto=format&fit=crop" },
-  { id:"162", malayalam:"ഇടിമിന്നൽ",     phonetic:"Idiminnal",      meaning:"Lightning / Thunder",   imageUrl:"https://images.unsplash.com/photo-1468459892041-18e2a8fdc3a0?w=600&auto=format&fit=crop" },
-  { id:"163", malayalam:"തേൻ",           phonetic:"Then",           meaning:"Honey",                 imageUrl:"https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=600&auto=format&fit=crop" },
-  { id:"164", malayalam:"ഇഞ്ചി",          phonetic:"Inji",           meaning:"Ginger",                imageUrl:"https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?w=600&auto=format&fit=crop" },
-  { id:"165", malayalam:"തക്കാളി",         phonetic:"Thakkaali",      meaning:"Tomato",                imageUrl:"https://images.unsplash.com/photo-1558818498-28c1e002b655?w=600&auto=format&fit=crop" },
-  { id:"166", malayalam:"ഉരുളക്കിഴങ്ങ്",  phonetic:"Urulakilangu",   meaning:"Potato",                imageUrl:"https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=600&auto=format&fit=crop" },
-  { id:"167", malayalam:"വഴുതന",         phonetic:"Vazhuthana",     meaning:"Brinjal / Eggplant",    imageUrl:"https://images.unsplash.com/photo-1501200291289-c5a76c232e5f?w=600&auto=format&fit=crop" },
-  { id:"168", malayalam:"കടല",           phonetic:"Kadala",         meaning:"Chickpea",              imageUrl:"https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=600&auto=format&fit=crop" },
-  { id:"169", malayalam:"ചക്ക",           phonetic:"Chakka",         meaning:"Jackfruit",             imageUrl:"https://images.unsplash.com/photo-1546817174-d9a6dee62fb7?w=600&auto=format&fit=crop" },
-  { id:"170", malayalam:"തേങ്ങ",          phonetic:"Thenga",         meaning:"Coconut",               imageUrl:"https://images.unsplash.com/photo-1559181567-c3190bac7e3e?w=600&auto=format&fit=crop" },
-  { id:"171", malayalam:"വഴി",            phonetic:"Vazhi",          meaning:"Way / Route",           imageUrl:"https://images.unsplash.com/photo-1519003300449-424ad0405076?w=600&auto=format&fit=crop" },
-  { id:"172", malayalam:"ജോലി",          phonetic:"Joli",           meaning:"Work / Job",            imageUrl:"https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&auto=format&fit=crop" },
-  { id:"173", malayalam:"പണം",           phonetic:"Panam",          meaning:"Money",                 imageUrl:"https://images.unsplash.com/photo-1526304640581-d334cdbbf45e?w=600&auto=format&fit=crop" },
-  { id:"174", malayalam:"സമയം",          phonetic:"Samayam",        meaning:"Time",                  imageUrl:"https://images.unsplash.com/photo-1563861826100-9cb868fdbe1c?w=600&auto=format&fit=crop" },
-  { id:"175", malayalam:"ഉത്തരം",         phonetic:"Utharam",        meaning:"Answer / Reply",        imageUrl:"https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop" },
-  { id:"176", malayalam:"ചോദ്യം",         phonetic:"Chodhyam",       meaning:"Question",              imageUrl:"https://images.unsplash.com/photo-1576267423445-b2e0074d68a4?w=600&auto=format&fit=crop" },
-  { id:"177", malayalam:"ഉത്സവം",         phonetic:"Uthsavam",       meaning:"Festival / Celebration",imageUrl:"https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&auto=format&fit=crop" },
-  { id:"178", malayalam:"ഓണം",           phonetic:"Onam",           meaning:"Onam (harvest festival)",imageUrl:"https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=600&auto=format&fit=crop" },
-  { id:"179", malayalam:"സ്വർഗ്ഗം",       phonetic:"Svargam",        meaning:"Heaven / Paradise",     imageUrl:"https://images.unsplash.com/photo-1501854140801-50d01698950b?w=600&auto=format&fit=crop" },
-  { id:"180", malayalam:"സ്വപ്നം",        phonetic:"Svapnam",        meaning:"Dream",                 imageUrl:"https://images.unsplash.com/photo-1531746790731-6c087fecd65a?w=600&auto=format&fit=crop" },
-  { id:"181", malayalam:"കരുത്ത്",        phonetic:"Karuthu",        meaning:"Strength",              imageUrl:"https://images.unsplash.com/photo-1549576490-b0b4831ef60a?w=600&auto=format&fit=crop" },
-  { id:"182", malayalam:"ബുദ്ധി",         phonetic:"Buddhi",         meaning:"Intelligence / Wisdom", imageUrl:"https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&auto=format&fit=crop" },
-  { id:"183", malayalam:"ഹൃദയം",         phonetic:"Hridayam",       meaning:"Heart",                 imageUrl:"https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&auto=format&fit=crop" },
-  { id:"184", malayalam:"ആത്മാ",         phonetic:"Aathma",         meaning:"Soul / Spirit",         imageUrl:"https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=600&auto=format&fit=crop" },
-  { id:"185", malayalam:"പ്രകൃതി",        phonetic:"Prakriti",       meaning:"Nature",                imageUrl:"https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&auto=format&fit=crop" },
-  { id:"186", malayalam:"ഇടം",           phonetic:"Idam",           meaning:"Place / Space",         imageUrl:"https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&auto=format&fit=crop" },
-  { id:"187", malayalam:"കളം",           phonetic:"Kalam",          meaning:"Field / Ground",        imageUrl:"https://images.unsplash.com/photo-1500651230702-0e2d8a49d4e7?w=600&auto=format&fit=crop" },
-  { id:"188", malayalam:"ആഘോഷം",        phonetic:"Aghosham",       meaning:"Celebration",           imageUrl:"https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&auto=format&fit=crop" },
-  { id:"189", malayalam:"ഗ്രാമം",         phonetic:"Gramam",         meaning:"Village",               imageUrl:"https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600&auto=format&fit=crop" },
-  { id:"190", malayalam:"നഗരം",          phonetic:"Nagaram",        meaning:"City / Town",           imageUrl:"https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&auto=format&fit=crop" },
-  { id:"191", malayalam:"ഭൂമി",           phonetic:"Bhoomi",         meaning:"Earth / Land",          imageUrl:"https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&auto=format&fit=crop" },
-  { id:"192", malayalam:"ഓർമ്മ",          phonetic:"Orma",           meaning:"Memory",                imageUrl:"https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=600&auto=format&fit=crop" },
-  { id:"193", malayalam:"കഥ",            phonetic:"Katha",          meaning:"Story",                 imageUrl:"https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&auto=format&fit=crop" },
-  { id:"194", malayalam:"പാട്ട്",           phonetic:"Paattu",         meaning:"Song",                  imageUrl:"https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop" },
-  { id:"195", malayalam:"നൃത്തം",          phonetic:"Nritham",        meaning:"Dance",                 imageUrl:"https://images.unsplash.com/photo-1508700115892-45ecd05ae2ad?w=600&auto=format&fit=crop" },
-  { id:"196", malayalam:"ചിത്രം",         phonetic:"Chitram",        meaning:"Picture / Drawing",     imageUrl:"https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600&auto=format&fit=crop" },
-  { id:"197", malayalam:"കളിക്കളം",       phonetic:"Kalikalam",      meaning:"Playground",            imageUrl:"https://images.unsplash.com/photo-1472162072942-cd5147eb3902?w=600&auto=format&fit=crop" },
-  { id:"198", malayalam:"ആകൃതി",         phonetic:"Aakriti",        meaning:"Shape / Form",          imageUrl:"https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&auto=format&fit=crop" },
-  { id:"199", malayalam:"നിറം",           phonetic:"Niram",          meaning:"Color",                 imageUrl:"https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&auto=format&fit=crop" },
-  { id:"200", malayalam:"സ്വരം",          phonetic:"Svaram",         meaning:"Voice / Sound",         imageUrl:"https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=600&auto=format&fit=crop" },
+  { id:"129", malayalam:"സന്തോഷം",       phonetic:"Santhosham",     meaning:"Happiness / Joy",        imageUrl:"https://images.unsplash.com/photo-1531746790731-6c087fecd65a?w=600&auto=format&fit=crop" },
+  { id:"130", malayalam:"സങ്കടം",         phonetic:"Sankadham",      meaning:"Sadness / Sorrow",       imageUrl:"https://images.unsplash.com/photo-1541199249251-f713e6145474?w=600&auto=format&fit=crop" },
+  { id:"131", malayalam:"പ്രേമം",          phonetic:"Premam",         meaning:"Love",                   imageUrl:"https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&auto=format&fit=crop" },
+  { id:"132", malayalam:"ദേഷ്യം",          phonetic:"Dheshyam",       meaning:"Anger",                  imageUrl:"https://images.unsplash.com/photo-1542173045-3bc6e77ad4fa?w=600&auto=format&fit=crop" },
+  { id:"133", malayalam:"ഭയം",            phonetic:"Bhayam",         meaning:"Fear",                   imageUrl:"https://images.unsplash.com/photo-1509248961158-e54f6934749c?w=600&auto=format&fit=crop" },
+  { id:"134", malayalam:"ക്ഷീണം",          phonetic:"Kshenam",        meaning:"Tiredness",              imageUrl:"https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=600&auto=format&fit=crop" },
+  { id:"135", malayalam:"വിശപ്പ്",         phonetic:"Vishappu",       meaning:"Hunger",                 imageUrl:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop" },
+  { id:"136", malayalam:"ദാഹം",           phonetic:"Dhaham",         meaning:"Thirst",                 imageUrl:"https://images.unsplash.com/photo-1559825481-12a05cc00344?w=600&auto=format&fit=crop" },
+  // Verbs
+  { id:"137", malayalam:"പഠിക്കുക",       phonetic:"Padikkuka",      meaning:"To Study / Learn",       imageUrl:"https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&auto=format&fit=crop" },
+  { id:"138", malayalam:"ഉറങ്ങുക",        phonetic:"Uranguka",       meaning:"To Sleep",               imageUrl:"https://images.unsplash.com/photo-1541480601022-2308c0f02487?w=600&auto=format&fit=crop" },
+  { id:"139", malayalam:"ഭക്ഷിക്കുക",     phonetic:"Bhakshikkuka",   meaning:"To Eat",                 imageUrl:"https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&auto=format&fit=crop" },
+  { id:"140", malayalam:"കുടിക്കുക",       phonetic:"Kudikkuka",      meaning:"To Drink",               imageUrl:"https://images.unsplash.com/photo-1559825481-12a05cc00344?w=600&auto=format&fit=crop" },
+  { id:"141", malayalam:"നടക്കുക",        phonetic:"Nadakkuka",      meaning:"To Walk",                imageUrl:"https://images.unsplash.com/photo-1476477579217-30c55d5c6a0f?w=600&auto=format&fit=crop" },
+  { id:"142", malayalam:"ഓടുക",          phonetic:"Oduka",          meaning:"To Run",                 imageUrl:"https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=600&auto=format&fit=crop" },
+  { id:"143", malayalam:"കാണുക",         phonetic:"Kaanuka",        meaning:"To See / Watch",         imageUrl:"https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&auto=format&fit=crop" },
+  { id:"144", malayalam:"കേൾക്കുക",       phonetic:"Keelkkuka",      meaning:"To Hear / Listen",       imageUrl:"https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=600&auto=format&fit=crop" },
+  { id:"145", malayalam:"സംസാരിക്കുക",   phonetic:"Samsaarikkuka",  meaning:"To Speak / Talk",        imageUrl:"https://images.unsplash.com/photo-1573497161161-c3e73707e25c?w=600&auto=format&fit=crop" },
+  { id:"146", malayalam:"ചിരിക്കുക",      phonetic:"Chirikkuka",     meaning:"To Laugh / Smile",       imageUrl:"https://images.unsplash.com/photo-1489424731084-a5d8b219a5bb?w=600&auto=format&fit=crop" },
+  { id:"147", malayalam:"കളിക്കുക",       phonetic:"Kalikkuka",      meaning:"To Play",                imageUrl:"https://images.unsplash.com/photo-1472162072942-cd5147eb3902?w=600&auto=format&fit=crop" },
+  { id:"148", malayalam:"പോകുക",         phonetic:"Pokuka",         meaning:"To Go",                  imageUrl:"https://images.unsplash.com/photo-1476477579217-30c55d5c6a0f?w=600&auto=format&fit=crop" },
+  { id:"149", malayalam:"വരുക",          phonetic:"Varuka",         meaning:"To Come",                imageUrl:"https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&auto=format&fit=crop" },
+  { id:"150", malayalam:"നോക്കുക",        phonetic:"Nokkuka",        meaning:"To Look",                imageUrl:"https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&auto=format&fit=crop" },
+  // More vocabulary
+  { id:"151", malayalam:"പേര്",           phonetic:"Peru",           meaning:"Name",                   imageUrl:"https://images.unsplash.com/photo-1516321497487-e288fb19713f?w=600&auto=format&fit=crop" },
+  { id:"152", malayalam:"ഭാഷ",           phonetic:"Bhasha",         meaning:"Language",               imageUrl:"https://images.unsplash.com/photo-1457369804613-52c61a468e7d?w=600&auto=format&fit=crop" },
+  { id:"153", malayalam:"മലയാളം",        phonetic:"Malayalam",      meaning:"Malayalam language",     imageUrl:"https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=600&auto=format&fit=crop" },
+  { id:"154", malayalam:"കേരളം",          phonetic:"Kerala",         meaning:"Kerala (state)",         imageUrl:"https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=600&auto=format&fit=crop" },
+  { id:"155", malayalam:"ആരോഗ്യം",       phonetic:"Aarogyam",       meaning:"Health",                 imageUrl:"https://images.unsplash.com/photo-1505576399279-565b52d4ac71?w=600&auto=format&fit=crop" },
+  { id:"156", malayalam:"ഡോക്ടർ",        phonetic:"Doctor",         meaning:"Doctor",                 imageUrl:"https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=600&auto=format&fit=crop" },
+  { id:"157", malayalam:"സ്നേഹം",         phonetic:"Sneham",         meaning:"Affection / Love",       imageUrl:"https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&auto=format&fit=crop" },
+  { id:"158", malayalam:"കൂട്ടുകാരൻ",    phonetic:"Koottukaaran",   meaning:"Friend (male)",          imageUrl:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&auto=format&fit=crop" },
+  { id:"159", malayalam:"കൂട്ടുകാരി",    phonetic:"Koottukaari",    meaning:"Friend (female)",        imageUrl:"https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=600&auto=format&fit=crop" },
+  { id:"160", malayalam:"മഞ്ഞ്",           phonetic:"Manju",          meaning:"Snow / Frost",           imageUrl:"https://images.unsplash.com/photo-1457269449834-928af64c684d?w=600&auto=format&fit=crop" },
+  { id:"161", malayalam:"ഇടിമിന്നൽ",     phonetic:"Idiminnal",      meaning:"Lightning / Thunder",    imageUrl:"https://images.unsplash.com/photo-1468459892041-18e2a8fdc3a0?w=600&auto=format&fit=crop" },
+  { id:"162", malayalam:"തേൻ",           phonetic:"Then",           meaning:"Honey",                  imageUrl:"https://images.unsplash.com/photo-1558642452-9d2a7deb7f62?w=600&auto=format&fit=crop" },
+  { id:"163", malayalam:"ഇഞ്ചി",          phonetic:"Inji",           meaning:"Ginger",                 imageUrl:"https://images.unsplash.com/photo-1601493700631-2b16ec4b4716?w=600&auto=format&fit=crop" },
+  { id:"164", malayalam:"തക്കാളി",         phonetic:"Thakkaali",      meaning:"Tomato",                 imageUrl:"https://images.unsplash.com/photo-1546093336-2f9d4b62a6a8?w=600&auto=format&fit=crop" },
+  { id:"165", malayalam:"ഉരുളക്കിഴങ്ങ്",  phonetic:"Urulakilangu",   meaning:"Potato",                 imageUrl:"https://images.unsplash.com/photo-1518977676601-b53f82aba655?w=600&auto=format&fit=crop" },
+  { id:"166", malayalam:"ചക്ക",           phonetic:"Chakka",         meaning:"Jackfruit",              imageUrl:"https://images.unsplash.com/photo-1586190848861-99aa4a171e90?w=600&auto=format&fit=crop" },
+  { id:"167", malayalam:"തേങ്ങ",          phonetic:"Thenga",         meaning:"Coconut",                imageUrl:"https://images.unsplash.com/photo-1580984969071-a8da5656c2fb?w=600&auto=format&fit=crop" },
+  { id:"168", malayalam:"ജോലി",          phonetic:"Joli",           meaning:"Work / Job",             imageUrl:"https://images.unsplash.com/photo-1454165804606-c3d57bc86b40?w=600&auto=format&fit=crop" },
+  { id:"169", malayalam:"പണം",           phonetic:"Panam",          meaning:"Money",                  imageUrl:"https://images.unsplash.com/photo-1561414927-6d86591d0c4f?w=600&auto=format&fit=crop" },
+  { id:"170", malayalam:"സമയം",          phonetic:"Samayam",        meaning:"Time",                   imageUrl:"https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop" },
+  { id:"171", malayalam:"ഉത്സവം",         phonetic:"Uthsavam",       meaning:"Festival",               imageUrl:"https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&auto=format&fit=crop" },
+  { id:"172", malayalam:"ഓണം",           phonetic:"Onam",           meaning:"Onam festival",          imageUrl:"https://images.unsplash.com/photo-1602216056096-3b40cc0c9944?w=600&auto=format&fit=crop" },
+  { id:"173", malayalam:"പ്രേമം",          phonetic:"Premam",         meaning:"Love / Romance",         imageUrl:"https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&auto=format&fit=crop" },
+  { id:"174", malayalam:"ഹൃദയം",         phonetic:"Hridayam",       meaning:"Heart",                  imageUrl:"https://images.unsplash.com/photo-1518199266791-5375a83190b7?w=600&auto=format&fit=crop" },
+  { id:"175", malayalam:"ഓർമ്മ",          phonetic:"Orma",           meaning:"Memory",                 imageUrl:"https://images.unsplash.com/photo-1519682337058-a94d519337bc?w=600&auto=format&fit=crop" },
+  { id:"176", malayalam:"കഥ",            phonetic:"Katha",          meaning:"Story",                  imageUrl:"https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=600&auto=format&fit=crop" },
+  { id:"177", malayalam:"പാട്ട്",           phonetic:"Paattu",         meaning:"Song",                   imageUrl:"https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=600&auto=format&fit=crop" },
+  { id:"178", malayalam:"നൃത്തം",          phonetic:"Nritham",        meaning:"Dance",                  imageUrl:"https://images.unsplash.com/photo-1504609813442-a8924e83f76e?w=600&auto=format&fit=crop" },
+  { id:"179", malayalam:"ഗ്രാമം",         phonetic:"Gramam",         meaning:"Village",                imageUrl:"https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=600&auto=format&fit=crop" },
+  { id:"180", malayalam:"നഗരം",          phonetic:"Nagaram",        meaning:"City / Town",            imageUrl:"https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?w=600&auto=format&fit=crop" },
+  { id:"181", malayalam:"ഭൂമി",           phonetic:"Bhoomi",         meaning:"Earth / Land",           imageUrl:"https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=600&auto=format&fit=crop" },
+  { id:"182", malayalam:"ആത്മാ",         phonetic:"Aathma",         meaning:"Soul / Spirit",          imageUrl:"https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=600&auto=format&fit=crop" },
+  { id:"183", malayalam:"പ്രകൃതി",        phonetic:"Prakriti",       meaning:"Nature",                 imageUrl:"https://images.unsplash.com/photo-1448375240586-882707db888b?w=600&auto=format&fit=crop" },
+  { id:"184", malayalam:"ചിത്രം",         phonetic:"Chitram",        meaning:"Picture / Drawing",      imageUrl:"https://images.unsplash.com/photo-1579783902614-a3fb3927b6a5?w=600&auto=format&fit=crop" },
+  { id:"185", malayalam:"സ്വപ്നം",        phonetic:"Svapnam",        meaning:"Dream",                  imageUrl:"https://images.unsplash.com/photo-1511406361295-0a1ff814c0ce?w=600&auto=format&fit=crop" },
+  { id:"186", malayalam:"കരുത്ത്",        phonetic:"Karuthu",        meaning:"Strength",               imageUrl:"https://images.unsplash.com/photo-1534368420009-621bfab424a8?w=600&auto=format&fit=crop" },
+  { id:"187", malayalam:"ബുദ്ധി",         phonetic:"Buddhi",         meaning:"Intelligence",           imageUrl:"https://images.unsplash.com/photo-1503676260728-1c00da094a0b?w=600&auto=format&fit=crop" },
+  { id:"188", malayalam:"ചോദ്യം",         phonetic:"Chodhyam",       meaning:"Question",               imageUrl:"https://images.unsplash.com/photo-1546410531-bb4caa6b424d?w=600&auto=format&fit=crop" },
+  { id:"189", malayalam:"ഉത്തരം",         phonetic:"Utharam",        meaning:"Answer",                 imageUrl:"https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&auto=format&fit=crop" },
+  { id:"190", malayalam:"ആഘോഷം",        phonetic:"Aghosham",       meaning:"Celebration",            imageUrl:"https://images.unsplash.com/photo-1533174072545-7a4b6ad7a6c3?w=600&auto=format&fit=crop" },
+  { id:"191", malayalam:"കളിക്കളം",       phonetic:"Kalikalam",      meaning:"Playground",             imageUrl:"https://images.unsplash.com/photo-1572375992501-4b0892d50c69?w=600&auto=format&fit=crop" },
+  { id:"192", malayalam:"ജോലി",          phonetic:"Joli",           meaning:"Work",                   imageUrl:"https://images.unsplash.com/photo-1499750310107-5fef28a66643?w=600&auto=format&fit=crop" },
+  { id:"193", malayalam:"വഴുതന",         phonetic:"Vazhuthana",     meaning:"Brinjal / Eggplant",     imageUrl:"https://images.unsplash.com/photo-1597362925123-77861d3fbac7?w=600&auto=format&fit=crop" },
+  { id:"194", malayalam:"കടല",           phonetic:"Kadala",         meaning:"Chickpea",               imageUrl:"https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=600&auto=format&fit=crop" },
+  { id:"195", malayalam:"നിറം",           phonetic:"Niram",          meaning:"Color",                  imageUrl:"https://images.unsplash.com/photo-1513364776144-60967b0f800f?w=600&auto=format&fit=crop" },
+  { id:"196", malayalam:"സ്വരം",          phonetic:"Svaram",         meaning:"Voice / Sound",          imageUrl:"https://images.unsplash.com/photo-1614680376573-df3480f0c6ff?w=600&auto=format&fit=crop" },
+  { id:"197", malayalam:"ആകൃതി",         phonetic:"Aakriti",        meaning:"Shape / Form",           imageUrl:"https://images.unsplash.com/photo-1509228468518-180dd4864904?w=600&auto=format&fit=crop" },
+  { id:"198", malayalam:"ഭംഗി",           phonetic:"Bhangi",         meaning:"Beauty",                 imageUrl:"https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=600&auto=format&fit=crop" },
+  { id:"199", malayalam:"ബുദ്ധിമുട്ട്",    phonetic:"Buddhimuttu",    meaning:"Difficulty",             imageUrl:"https://images.unsplash.com/photo-1542173045-3bc6e77ad4fa?w=600&auto=format&fit=crop" },
+  { id:"200", malayalam:"ഒഴിവ്",          phonetic:"Ozhivu",         meaning:"Vacation / Holiday",     imageUrl:"https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=600&auto=format&fit=crop" },
 ];
 
 // ════════════════════════════════════════════════════════
-//  STORAGE
+//  AUTH & USER STORAGE
+//  All data lives in localStorage under two keys:
+//    lexie_users  — { username: { name, passwordHash } }
+//    lexie_progress — { username: { wordId: { seen, lastSeen } } }
+//  Session (who is logged in) stored under lexie_session.
 // ════════════════════════════════════════════════════════
-const STORAGE_KEY = 'lexie_progress_v2';
 
+// Tiny hash — not cryptographic, but fine for a personal app.
+// Converts a string to a stable 8-char hex string.
+function simpleHash(str) {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193) >>> 0;
+  }
+  return h.toString(16).padStart(8, '0');
+}
+
+const USERS_KEY    = 'lexie_users';
+const PROGRESS_KEY = 'lexie_progress';
+const SESSION_KEY  = 'lexie_session';
+
+function getUsers() {
+  try { return JSON.parse(localStorage.getItem(USERS_KEY) || '{}'); } catch { return {}; }
+}
+function saveUsers(u) {
+  try { localStorage.setItem(USERS_KEY, JSON.stringify(u)); } catch {}
+}
+
+function getAllProgress() {
+  try { return JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}'); } catch { return {}; }
+}
+function saveAllProgress(p) {
+  try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(p)); } catch {}
+}
+
+// Per-user progress helpers
 function loadProgress() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? JSON.parse(raw) : {};
-  } catch { return {}; }
+  const all = getAllProgress();
+  return all[currentUser] || {};
 }
-
 function saveProgress(progress) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); } catch {}
+  const all = getAllProgress();
+  all[currentUser] = progress;
+  saveAllProgress(all);
 }
-
 function markWordsSeen(wordIds) {
   const progress = loadProgress();
   const now = new Date().toISOString();
-  wordIds.forEach(id => {
-    progress[id] = { seen: true, lastSeen: now };
-  });
+  wordIds.forEach(id => { progress[id] = { seen: true, lastSeen: now }; });
   saveProgress(progress);
+}
+
+// Session
+function getSession() {
+  try { return JSON.parse(localStorage.getItem(SESSION_KEY) || 'null'); } catch { return null; }
+}
+function setSession(username) {
+  try { localStorage.setItem(SESSION_KEY, JSON.stringify(username)); } catch {}
+}
+function clearSession() {
+  try { localStorage.removeItem(SESSION_KEY); } catch {}
+}
+
+// ════════════════════════════════════════════════════════
+//  APP STATE
+// ════════════════════════════════════════════════════════
+let currentUser   = null; // username string of logged-in user
+let selectedCount = null;
+let deck          = [];
+let currentIndex  = 0;
+let isFlipped     = false;
+let isSpeaking    = false;
+
+// ════════════════════════════════════════════════════════
+//  AUTH LOGIC
+// ════════════════════════════════════════════════════════
+function doLogin() {
+  const username = document.getElementById('loginUser').value.trim().toLowerCase();
+  const password = document.getElementById('loginPass').value;
+  const errEl    = document.getElementById('loginError');
+  errEl.textContent = '';
+
+  if (!username || !password) {
+    errEl.textContent = 'Please fill in both fields.'; return;
+  }
+  const users = getUsers();
+  if (!users[username]) {
+    errEl.textContent = 'No account found with that username.'; return;
+  }
+  if (users[username].passwordHash !== simpleHash(password)) {
+    errEl.textContent = 'Incorrect password. Try again.'; return;
+  }
+
+  // Success
+  currentUser = username;
+  setSession(username);
+  document.getElementById('loginPass').value = '';
+  enterApp(users[username].name);
+}
+
+function doRegister() {
+  const name     = document.getElementById('regName').value.trim();
+  const username = document.getElementById('regUser').value.trim().toLowerCase();
+  const pass     = document.getElementById('regPass').value;
+  const pass2    = document.getElementById('regPass2').value;
+  const errEl    = document.getElementById('registerError');
+  errEl.textContent = '';
+
+  if (!name || !username || !pass || !pass2) {
+    errEl.textContent = 'Please fill in all fields.'; return;
+  }
+  if (username.length < 3) {
+    errEl.textContent = 'Username must be at least 3 characters.'; return;
+  }
+  if (!/^[a-z0-9_]+$/.test(username)) {
+    errEl.textContent = 'Username: letters, numbers and _ only.'; return;
+  }
+  if (pass.length < 6) {
+    errEl.textContent = 'Password must be at least 6 characters.'; return;
+  }
+  if (pass !== pass2) {
+    errEl.textContent = 'Passwords do not match.'; return;
+  }
+
+  const users = getUsers();
+  if (users[username]) {
+    errEl.textContent = 'That username is already taken.'; return;
+  }
+
+  // Create account
+  users[username] = { name, passwordHash: simpleHash(pass) };
+  saveUsers(users);
+
+  // Log them straight in
+  currentUser = username;
+  setSession(username);
+  // Clear form
+  ['regName','regUser','regPass','regPass2'].forEach(id => document.getElementById(id).value = '');
+  enterApp(name);
+}
+
+function doLogout() {
+  currentUser = null;
+  clearSession();
+  window.speechSynthesis && window.speechSynthesis.cancel();
+  selectedCount = null;
+  document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('selected'));
+  document.getElementById('startBtn').disabled = true;
+  document.getElementById('loginUser').value = '';
+  document.getElementById('loginPass').value = '';
+  document.getElementById('loginError').textContent = '';
+  showScreen('loginScreen');
+}
+
+function enterApp(name) {
+  // Personalise the greeting
+  const greetings = [
+    `Hello, ${name}! Ready to learn today? 🌸`,
+    `Welcome back, ${name}! Let's go! ✨`,
+    `Hi ${name}! Your Malayalam journey continues 💫`,
+  ];
+  document.getElementById('homeGreeting').innerHTML =
+    greetings[Math.floor(Math.random() * greetings.length)];
+  showScreen('homeScreen');
 }
 
 // ════════════════════════════════════════════════════════
@@ -972,48 +1214,29 @@ function shuffle(arr) {
 
 function getCardDeck(requestedCount, progress) {
   const seenIds = new Set(Object.keys(progress).filter(k => progress[k].seen));
-  const seen = WORDS.filter(w => seenIds.has(w.id));
-  const unseen = WORDS.filter(w => !seenIds.has(w.id));
+  const seen    = WORDS.filter(w =>  seenIds.has(w.id));
+  const unseen  = WORDS.filter(w => !seenIds.has(w.id));
 
-  if (seen.length === 0) {
-    return shuffle(unseen).slice(0, requestedCount);
-  }
+  if (seen.length === 0) return shuffle(unseen).slice(0, requestedCount);
 
-  let newCount = Math.round(requestedCount * 0.30);
+  let newCount  = Math.round(requestedCount * 0.30);
   let seenCount = requestedCount - newCount;
+  if (unseen.length < newCount)  { newCount  = unseen.length; seenCount = requestedCount - newCount; }
+  if (seen.length  < seenCount)  { seenCount = seen.length; }
 
-  if (unseen.length < newCount) {
-    newCount = unseen.length;
-    seenCount = requestedCount - newCount;
-  }
-  if (seen.length < seenCount) {
-    seenCount = seen.length;
-  }
-
-  const newCards  = shuffle(unseen).slice(0, newCount);
-  const seenCards = shuffle(seen).slice(0, seenCount);
-  return shuffle([...newCards, ...seenCards]);
+  return shuffle([...shuffle(unseen).slice(0, newCount), ...shuffle(seen).slice(0, seenCount)]);
 }
-
-// ════════════════════════════════════════════════════════
-//  APP STATE
-// ════════════════════════════════════════════════════════
-let selectedCount = null;
-let deck = [];
-let currentIndex = 0;
-let isFlipped = false;
-let isSpeaking = false;
 
 // ════════════════════════════════════════════════════════
 //  HOME SCREEN
 // ════════════════════════════════════════════════════════
 function updateHomeStats() {
-  const progress = loadProgress();
+  const progress  = loadProgress();
   const seenCount = Object.values(progress).filter(p => p.seen).length;
-  const total = WORDS.length;
-  document.getElementById('statSeen').textContent = seenCount;
+  const total     = WORDS.length;
+  document.getElementById('statSeen').textContent  = seenCount;
   document.getElementById('statTotal').textContent = total;
-  document.getElementById('statPct').textContent = Math.round((seenCount / total) * 100) + '%';
+  document.getElementById('statPct').textContent   = Math.round((seenCount / total) * 100) + '%';
 }
 
 function selectCount(n) {
@@ -1025,8 +1248,7 @@ function selectCount(n) {
 
 function startSession() {
   if (!selectedCount) return;
-  const progress = loadProgress();
-  deck = getCardDeck(selectedCount, progress);
+  deck = getCardDeck(selectedCount, loadProgress());
   currentIndex = 0;
   showScreen('sessionScreen');
   renderCard();
@@ -1035,7 +1257,7 @@ function startSession() {
 // ════════════════════════════════════════════════════════
 //  SESSION
 // ════════════════════════════════════════════════════════
-function updateProgress() {
+function updateSessionProgress() {
   const pct = (currentIndex / deck.length) * 100;
   document.getElementById('progressBar').style.width = pct + '%';
   document.getElementById('cardCounter').textContent = (currentIndex + 1) + ' / ' + deck.length;
@@ -1043,38 +1265,32 @@ function updateProgress() {
 
 function renderCard() {
   isFlipped = false;
-  updateProgress();
-  const word = deck[currentIndex];
+  updateSessionProgress();
+  const word      = deck[currentIndex];
   const container = document.getElementById('cardContainer');
 
-  // Remove old card
   const old = container.querySelector('.flashcard-wrap');
-  if (old) {
-    old.classList.add('exiting');
-    setTimeout(() => old.remove(), 350);
-  }
+  if (old) { old.classList.add('exiting'); setTimeout(() => old.remove(), 350); }
 
   setTimeout(() => {
     const wrap = document.createElement('div');
     wrap.className = 'flashcard-wrap';
     wrap.innerHTML = `
       <div class="flashcard-inner" id="cardInner">
-        <!-- FRONT -->
         <div class="card-face card-front" id="cardFront">
           <div class="card-front-deco"></div>
           <div class="card-front-deco2"></div>
           <div class="card-badge">Card ${currentIndex + 1}</div>
           <div class="card-malayalam">${word.malayalam}</div>
           <div class="card-phonetic">${word.phonetic}</div>
-          <button class="speak-btn" id="speakBtn" onclick="speakWord(event, '${word.malayalam.replace(/'/g, "\\'")}')">🔊</button>
+          <button class="speak-btn" id="speakBtn" onclick="speakWord(event,'${word.malayalam.replace(/'/g,"\\'")}')">🔊</button>
           <div class="card-hint">Tap anywhere to reveal</div>
         </div>
-        <!-- BACK -->
         <div class="card-face card-back" id="cardBack">
           <div class="card-image-wrap">
             <img class="card-image" src="${word.imageUrl}" alt="${word.meaning}"
               onload="this.style.opacity=1"
-              onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
               style="opacity:0;transition:opacity 0.4s;">
             <div class="card-image-fallback">
               <div class="fb-mal">${word.malayalam}</div>
@@ -1088,130 +1304,100 @@ function renderCard() {
           </div>
           <div class="card-continue-hint">Tap to continue →</div>
         </div>
-      </div>
-    `;
-
+      </div>`;
     wrap.addEventListener('click', handleCardClick);
     container.appendChild(wrap);
-
-    // Auto-speak on card load (slight delay)
     setTimeout(() => speakWordAuto(word.malayalam), 600);
   }, old ? 300 : 0);
 }
 
 function handleCardClick(e) {
-  // Don't flip if tapping the speak button
   if (e.target.closest('.speak-btn')) return;
-
   if (!isFlipped) {
-    // Flip to back
     isFlipped = true;
     document.getElementById('cardInner').classList.add('flipped');
     markWordsSeen([deck[currentIndex].id]);
   } else {
-    // Advance
     setTimeout(advanceCard, 280);
   }
 }
 
 function advanceCard() {
-  if (currentIndex < deck.length - 1) {
-    currentIndex++;
-    renderCard();
-  } else {
-    showDoneScreen();
-  }
+  if (currentIndex < deck.length - 1) { currentIndex++; renderCard(); }
+  else showDoneScreen();
 }
 
 // ════════════════════════════════════════════════════════
 //  TEXT TO SPEECH
-//  Strategy:
-//   1. Preferred: Google Translate TTS fetched via fetch()
-//      then played as a Blob URL — this sidesteps CORS on
-//      the Audio element while still getting real Malayalam.
-//   2. Fallback: Web Speech API with lang=ml-IN (works on
-//      Android Chrome & some desktop browsers that ship a
-//      Malayalam voice).
-//   3. Last resort: Web Speech API with no voice set but
-//      lang forced — better than English default.
+//  1. ResponsiveVoice (Malayalam) — best cross-platform
+//  2. Google Translate TTS via blob fetch — good fallback
+//  3. Web Speech API with ml-IN — last resort
 // ════════════════════════════════════════════════════════
-
-// Single reusable audio element
 const ttsAudio = document.createElement('audio');
 ttsAudio.style.display = 'none';
 document.body.appendChild(ttsAudio);
-
 let currentSpeakBtn = null;
 
 function setSpeaking(btn, on) {
   isSpeaking = on;
   if (currentSpeakBtn) currentSpeakBtn.classList.remove('speaking');
-  if (on && btn) { btn.classList.add('speaking'); currentSpeakBtn = btn; }
-  else currentSpeakBtn = null;
+  currentSpeakBtn = (on && btn) ? btn : null;
+  if (currentSpeakBtn) currentSpeakBtn.classList.add('speaking');
 }
 
-function speakWordAuto(text) {
-  speakMalayalam(text, null);
-}
-
-function speakWord(e, text) {
-  e.stopPropagation();
-  speakMalayalam(text, e.currentTarget);
-}
+function speakWordAuto(text) { speakMalayalam(text, null); }
+function speakWord(e, text)  { e.stopPropagation(); speakMalayalam(text, e.currentTarget); }
 
 async function speakMalayalam(text, btn) {
-  // Stop anything currently playing
-  ttsAudio.pause();
-  ttsAudio.src = '';
+  ttsAudio.pause(); ttsAudio.src = '';
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   setSpeaking(btn, false);
 
-  // ── Option 1: fetch Google TTS as a blob ──────────────
-  // Google Translate TTS returns real Malayalam audio.
-  // We fetch it as a blob to avoid the CORS restriction
-  // that blocks Audio.src when the file is opened locally.
-  const encoded = encodeURIComponent(text);
-  const ttsUrl = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=ml&client=gtx&q=${encoded}`;
+  // ── 1. ResponsiveVoice ──────────────────────────────
+  if (typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()) {
+    setSpeaking(btn, true);
+    responsiveVoice.speak(text, 'Malayalam Female', {
+      rate: 0.9,
+      onend:   () => setSpeaking(btn, false),
+      onerror: () => { setSpeaking(btn, false); googleTTSFallback(text, btn); }
+    });
+    return;
+  }
 
+  // ── 2. Google Translate TTS blob ───────────────────
+  await googleTTSFallback(text, btn);
+}
+
+async function googleTTSFallback(text, btn) {
+  const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=ml&client=gtx&q=${encodeURIComponent(text)}`;
   try {
-    const response = await fetch(ttsUrl);
-    if (!response.ok) throw new Error('TTS fetch failed');
-    const blob = await response.blob();
+    const res  = await fetch(url);
+    if (!res.ok) throw new Error('bad response');
+    const blob    = await res.blob();
     const blobUrl = URL.createObjectURL(blob);
-
     setSpeaking(btn, true);
     ttsAudio.src = blobUrl;
     ttsAudio.onended = () => { setSpeaking(btn, false); URL.revokeObjectURL(blobUrl); };
     ttsAudio.onerror = () => { setSpeaking(btn, false); URL.revokeObjectURL(blobUrl); webSpeechFallback(text, btn); };
     await ttsAudio.play();
-    return;
   } catch (_) {
-    // fetch blocked (e.g. opened as file:// without CORS headers) → fall through
+    webSpeechFallback(text, btn);
   }
-
-  // ── Option 2: Web Speech API with Malayalam voice ─────
-  webSpeechFallback(text, btn);
 }
 
 function webSpeechFallback(text, btn) {
   if (!window.speechSynthesis) return;
-
-  const voices = window.speechSynthesis.getVoices();
-  // Look for any voice whose lang starts with 'ml'
+  const voices  = window.speechSynthesis.getVoices();
   const mlVoice = voices.find(v => v.lang.toLowerCase().startsWith('ml'));
-
-  const utt = new SpeechSynthesisUtterance(text);
-  utt.lang = 'ml-IN';
-  utt.rate = 0.82;
+  const utt     = new SpeechSynthesisUtterance(text);
+  utt.lang  = 'ml-IN';
+  utt.rate  = 0.82;
   if (mlVoice) utt.voice = mlVoice;
-
   setSpeaking(btn, true);
-  utt.onend   = () => setSpeaking(btn, false);
-  utt.onerror = () => setSpeaking(btn, false);
+  utt.onend = utt.onerror = () => setSpeaking(btn, false);
   window.speechSynthesis.speak(utt);
 }
 
-// Prime the voice list (browsers load it async)
 if (window.speechSynthesis) {
   window.speechSynthesis.getVoices();
   window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices();
@@ -1221,22 +1407,23 @@ if (window.speechSynthesis) {
 //  DONE SCREEN
 // ════════════════════════════════════════════════════════
 function showDoneScreen() {
-  const progress = loadProgress();
+  const progress  = loadProgress();
   const seenCount = Object.values(progress).filter(p => p.seen).length;
-  const pct = Math.round((seenCount / WORDS.length) * 100);
+  const pct       = Math.round((seenCount / WORDS.length) * 100);
+  const users     = getUsers();
+  const name      = currentUser ? (users[currentUser]?.name || currentUser) : 'you';
 
   document.getElementById('doneCards').textContent = deck.length;
-  document.getElementById('doneSeen').textContent = seenCount;
-  document.getElementById('donePct').textContent = pct + '%';
+  document.getElementById('doneSeen').textContent  = seenCount;
+  document.getElementById('donePct').textContent   = pct + '%';
 
   const msgs = [
-    "Great work! Every card brings you closer to fluency. 🌸",
-    "Fantastic session! Malayalam is becoming part of you. 💫",
-    "You're doing amazing! Keep going! 🎊",
-    "Wonderful! She'd be so proud of you learning this! ❤️"
+    `Amazing work, ${name}! Every card counts. 🌸`,
+    `Fantastic session, ${name}! Malayalam suits you. 💫`,
+    `Keep it up, ${name}! You're doing brilliantly! 🎊`,
+    `${name}, you're unstoppable! 🔥`,
   ];
   document.getElementById('doneSub').textContent = msgs[Math.floor(Math.random() * msgs.length)];
-
   showScreen('doneScreen');
   launchConfetti();
 }
@@ -1246,12 +1433,7 @@ function launchConfetti() {
   for (let i = 0; i < 60; i++) {
     const p = document.createElement('div');
     p.className = 'confetti-piece';
-    p.style.left = Math.random() * 100 + 'vw';
-    p.style.background = colors[Math.floor(Math.random() * colors.length)];
-    p.style.width = (6 + Math.random() * 6) + 'px';
-    p.style.height = (6 + Math.random() * 6) + 'px';
-    p.style.animationDuration = (1.5 + Math.random() * 2.5) + 's';
-    p.style.animationDelay = (Math.random() * 0.8) + 's';
+    p.style.cssText = `left:${Math.random()*100}vw;background:${colors[Math.floor(Math.random()*colors.length)]};width:${6+Math.random()*6}px;height:${6+Math.random()*6}px;animation-duration:${1.5+Math.random()*2.5}s;animation-delay:${Math.random()*0.8}s`;
     document.body.appendChild(p);
     setTimeout(() => p.remove(), 4000);
   }
@@ -1263,9 +1445,7 @@ function launchConfetti() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
-  if (id === 'homeScreen') {
-    updateHomeStats();
-  }
+  if (id === 'homeScreen') updateHomeStats();
 }
 
 function goHome() {
@@ -1277,17 +1457,27 @@ function goHome() {
 }
 
 function goAgain() {
-  const progress = loadProgress();
-  deck = getCardDeck(deck.length, progress);
+  deck = getCardDeck(deck.length, loadProgress());
   currentIndex = 0;
   showScreen('sessionScreen');
   renderCard();
 }
 
 // ════════════════════════════════════════════════════════
-//  INIT
+//  INIT — resume session if already logged in
 // ════════════════════════════════════════════════════════
-updateHomeStats();
+(function init() {
+  const savedUser = getSession();
+  if (savedUser) {
+    const users = getUsers();
+    if (users[savedUser]) {
+      currentUser = savedUser;
+      enterApp(users[savedUser].name);
+      return;
+    }
+  }
+  showScreen('loginScreen');
+})();
 </script>
 </body>
 </html>
