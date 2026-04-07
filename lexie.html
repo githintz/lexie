@@ -22,8 +22,8 @@
     --text: #e6edf3;
     --muted: #8b949e;
     --radius: 24px;
-    --card-w: min(380px, 92vw);
-    --card-h: min(520px, 72vh);
+    --card-w: 100vw;
+    --card-h: calc(100dvh - 64px - env(safe-area-inset-bottom, 0px));
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
@@ -268,10 +268,11 @@
 
   .card-area {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     width: 100%;
     height: 100dvh;
+    padding-top: 64px;
   }
 
   /* ── Flashcard ── */
@@ -350,24 +351,27 @@
     pointer-events: none;
   }
 
-  .card-malayalam {
-    font-family: 'Noto Sans Malayalam', sans-serif;
-    font-size: clamp(48px, 12vw, 72px);
+  .card-phonetic {
+    font-family: 'DM Sans', sans-serif;
+    font-size: clamp(34px, 9vw, 54px);
     font-weight: 700;
+    font-style: normal;
     color: var(--cream);
     text-align: center;
     line-height: 1.2;
     text-shadow: 0 2px 20px rgba(240,192,96,0.2);
-    margin-bottom: 16px;
+    letter-spacing: 0.01em;
+    margin-bottom: 10px;
   }
 
-  .card-phonetic {
-    font-size: 18px;
-    font-weight: 300;
-    color: rgba(240,192,96,0.75);
-    letter-spacing: 0.06em;
+  .card-malayalam {
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    font-size: clamp(20px, 5vw, 28px);
+    font-weight: 400;
+    color: rgba(240,192,96,0.7);
+    text-align: center;
+    line-height: 1.3;
     margin-bottom: 32px;
-    font-style: italic;
   }
 
   .speak-btn {
@@ -622,12 +626,61 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 
-  @media (max-height: 680px) {
-    :root { --card-h: 88vw; }
-    .home-card { padding: 28px 24px 28px; }
-    .home-logo { font-size: 36px; margin-bottom: 4px; }
-    .home-title { font-size: 34px; }
+  /* Mobile: full-bleed card — no rounded corners */
+  .flashcard-inner { border-radius: 0; }
+  .card-face       { border-radius: 0; }
+  .card-image-wrap { border-radius: 0; }
+
+  /* Desktop: restore centred card with rounded corners */
+  @media (min-width: 600px) {
+    :root {
+      --card-w: min(480px, 92vw);
+      --card-h: min(640px, 80vh);
+    }
+    .card-area        { align-items: center; padding-top: 0; }
+    .flashcard-inner  { border-radius: var(--radius); }
+    .card-face        { border-radius: var(--radius); }
+    .card-image-wrap  { border-radius: var(--radius) var(--radius) 0 0; }
   }
+
+  /* Home screen scrollable for when topic list makes it tall */
+  #homeScreen {
+    overflow-y: auto;
+    justify-content: flex-start;
+    -webkit-overflow-scrolling: touch;
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+
+  /* ── Topic grid (home screen) ── */
+  .topic-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+    margin: 6px 0 16px;
+    width: 100%;
+  }
+  .topic-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: var(--bg2);
+    border: 1.5px solid rgba(255,255,255,0.06);
+    color: var(--text);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    text-align: left;
+  }
+  .topic-btn:hover   { background: rgba(255,255,255,0.05); }
+  .topic-btn.active  { border-color: var(--gold); background: rgba(240,192,96,0.08); }
+  .topic-btn .topic-name { font-size: 12px; font-weight: 500; line-height: 1.3; }
+  .topic-btn .topic-stat { font-size: 11px; opacity: 0.45; margin-top: 3px; }
+  /* "All Topics" spans both columns */
+  .topic-grid .topic-btn:first-child { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; }
+  .topic-grid .topic-btn:first-child .topic-name { font-size: 13px; }
+  .topic-grid .topic-btn:first-child .topic-stat  { margin-top: 0; }
 
   /* ── Login Screen ── */
   .login-card {
@@ -760,6 +813,9 @@
     <h1 class="home-title">Lexie</h1>
     <p class="home-sub" id="homeGreeting">Your personal Malayalam tutor — made with love <span>♥</span></p>
 
+    <p class="section-label">Which topic?</p>
+    <div class="topic-grid" id="topicGrid"></div>
+
     <p class="section-label">How many cards today?</p>
     <div class="count-grid" id="countGrid">
       <button class="count-btn" onclick="selectCount(5)"><span>5</span></button>
@@ -871,14 +927,18 @@ function clearSession()        { try { localStorage.removeItem(SESSION_KEY); } c
 // ════════════════════════════════════════════════════════
 //  APP STATE
 // ════════════════════════════════════════════════════════
-let currentUser   = null;   // username string
-let currentName   = null;   // display name
-let userProgress  = {};     // { wordId: { seen, lastSeen } } — cached from Supabase
-let selectedCount = null;
-let deck          = [];
-let currentIndex  = 0;
-let isFlipped     = false;
-let isSpeaking    = false;
+let currentUser     = null;   // username string
+let currentName     = null;   // display name
+let userProgress    = {};     // { wordId: { seen, lastSeen } } — cached from Supabase
+let selectedCount   = null;
+let selectedCategory = null;  // null = All Topics
+let deck            = [];
+let currentIndex    = 0;
+let isFlipped       = false;
+let isSpeaking      = false;
+
+// Derive ordered category list from the word data (preserves insertion order)
+const CATEGORIES = [...new Set(WORDS.map(w => w.category))];
 
 // ════════════════════════════════════════════════════════
 //  LOADING UI HELPERS
@@ -1020,7 +1080,8 @@ function doLogout() {
   userProgress  = {};
   clearSession();
   window.speechSynthesis && window.speechSynthesis.cancel();
-  selectedCount = null;
+  selectedCount    = null;
+  selectedCategory = null;
   document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('selected'));
   document.getElementById('startBtn').disabled = true;
   document.getElementById('loginUser').value   = '';
@@ -1056,9 +1117,10 @@ function shuffle(arr) {
 }
 
 function getCardDeck(requestedCount, progress) {
+  const pool    = selectedCategory ? WORDS.filter(w => w.category === selectedCategory) : WORDS;
   const seenIds = new Set(Object.keys(progress).filter(k => progress[k].seen));
-  const seen    = WORDS.filter(w =>  seenIds.has(w.id));
-  const unseen  = WORDS.filter(w => !seenIds.has(w.id));
+  const seen    = pool.filter(w =>  seenIds.has(w.id));
+  const unseen  = pool.filter(w => !seenIds.has(w.id));
 
   if (seen.length === 0) return shuffle(unseen).slice(0, requestedCount);
 
@@ -1074,12 +1136,41 @@ function getCardDeck(requestedCount, progress) {
 //  HOME SCREEN
 // ════════════════════════════════════════════════════════
 function updateHomeStats() {
-  const progress  = loadProgress();
-  const seenCount = Object.values(progress).filter(p => p.seen).length;
-  const total     = WORDS.length;
+  const progress = loadProgress();
+  const seenIds  = new Set(Object.keys(progress).filter(k => progress[k].seen));
+  const pool     = selectedCategory ? WORDS.filter(w => w.category === selectedCategory) : WORDS;
+  const seenCount = pool.filter(w => seenIds.has(w.id)).length;
+  const total     = pool.length;
   document.getElementById('statSeen').textContent  = seenCount;
   document.getElementById('statTotal').textContent = total;
-  document.getElementById('statPct').textContent   = Math.round((seenCount / total) * 100) + '%';
+  document.getElementById('statPct').textContent   = total ? Math.round((seenCount / total) * 100) + '%' : '0%';
+}
+
+function renderTopicGrid() {
+  const grid     = document.getElementById('topicGrid');
+  const progress = loadProgress();
+  const seenIds  = new Set(Object.keys(progress).filter(k => progress[k].seen));
+  const buttons  = [
+    makeTopicBtn('All Topics', WORDS.length, WORDS.filter(w => seenIds.has(w.id)).length, selectedCategory === null),
+    ...CATEGORIES.map(cat => {
+      const catWords = WORDS.filter(w => w.category === cat);
+      const catSeen  = catWords.filter(w => seenIds.has(w.id)).length;
+      return makeTopicBtn(cat, catWords.length, catSeen, selectedCategory === cat);
+    })
+  ];
+  grid.replaceChildren(...buttons);
+}
+
+function makeTopicBtn(label, total, seen, active) {
+  const btn = document.createElement('button');
+  btn.className = 'topic-btn' + (active ? ' active' : '');
+  btn.innerHTML = `<span class="topic-name">${label}</span><span class="topic-stat">${seen}/${total}</span>`;
+  btn.onclick = () => {
+    selectedCategory = label === 'All Topics' ? null : label;
+    renderTopicGrid();
+    updateHomeStats();
+  };
+  return btn;
 }
 
 function selectCount(n) {
@@ -1124,8 +1215,8 @@ function renderCard() {
           <div class="card-front-deco"></div>
           <div class="card-front-deco2"></div>
           <div class="card-badge">Card ${currentIndex + 1}</div>
-          <div class="card-malayalam">${word.malayalam}</div>
           <div class="card-phonetic">${word.phonetic}</div>
+          <div class="card-malayalam">${word.malayalam}</div>
           <button class="speak-btn" id="speakBtn" onclick="speakWord(event,'${word.malayalam.replace(/'/g,"\\'")}')">🔊</button>
           <div class="card-hint">Tap anywhere to reveal</div>
         </div>
@@ -1281,7 +1372,7 @@ function launchConfetti() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
-  if (id === 'homeScreen') updateHomeStats();
+  if (id === 'homeScreen') { renderTopicGrid(); updateHomeStats(); }
 }
 
 function goHome() {
