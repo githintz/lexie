@@ -269,7 +269,7 @@
 
   .card-area {
     display: flex;
-    align-items: flex-start;
+    align-items: stretch;
     justify-content: center;
     width: 100%;
     flex: 1;
@@ -278,8 +278,8 @@
 
   /* ── Flashcard ── */
   .flashcard-wrap {
-    width: var(--card-w);
-    height: var(--card-h);
+    width: 100%;
+    height: auto;     /* stretched to fill .card-area via align-items:stretch */
     perspective: 1200px;
     cursor: pointer;
     position: relative;
@@ -648,6 +648,7 @@
     #sessionScreen    { overflow: visible; }
     .session-header   { position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(to bottom, var(--bg) 60%, transparent); }
     .card-area        { flex: none; height: 100dvh; align-items: center; }
+    .flashcard-wrap   { width: var(--card-w); height: var(--card-h); }
     .flashcard-inner  { border-radius: var(--radius); }
     .card-face        { border-radius: var(--radius); }
     .card-image-wrap  { border-radius: var(--radius) var(--radius) 0 0; }
