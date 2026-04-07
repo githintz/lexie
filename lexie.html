@@ -276,10 +276,17 @@
     min-height: 0;
   }
 
+  #cardContainer {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: stretch;
+  }
+
   /* ── Flashcard ── */
   .flashcard-wrap {
     width: 100%;
-    height: auto;     /* stretched to fill .card-area via align-items:stretch */
+    height: 100%;
     perspective: 1200px;
     cursor: pointer;
     position: relative;
