@@ -632,8 +632,9 @@
 
   /* Session screen: full-bleed, no inherited padding */
   #sessionScreen {
+    display: grid;
+    grid-template-rows: auto 1fr;
     padding: 0;
-    justify-content: flex-start;
     overflow: hidden;
   }
 
@@ -648,7 +649,7 @@
       --card-w: min(480px, 92vw);
       --card-h: min(640px, 80vh);
     }
-    #sessionScreen    { overflow: visible; }
+    #sessionScreen    { display: flex; flex-direction: column; overflow: visible; }
     .session-header   { position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(to bottom, var(--bg) 60%, transparent); }
     .card-area        { display: flex; align-items: center; justify-content: center; flex: none; height: 100dvh; position: static; }
     #cardContainer    { position: static; width: auto; height: auto; }
