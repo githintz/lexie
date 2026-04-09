@@ -220,15 +220,15 @@
      SESSION SCREEN
   ════════════════════════════════ */
   .session-header {
-    position: relative;
-    width: 100%;
-    padding: env(safe-area-inset-top, 12px) 20px 12px;
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 56px;
+    padding: 0 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     z-index: 10;
     background: var(--bg);
-    flex-shrink: 0;
   }
 
   .back-btn {
@@ -268,18 +268,18 @@
   }
 
   .card-area {
-    display: flex;
-    align-items: stretch;
-    justify-content: center;
-    width: 100%;
-    flex: 1;
-    min-height: 0;
+    position: fixed;
+    top: 56px; left: 0; right: 0; bottom: 0;
   }
 
   /* ── Flashcard ── */
+  #cardContainer {
+    width: 100%;
+    height: 100%;
+  }
   .flashcard-wrap {
     width: 100%;
-    height: auto;     /* stretched to fill .card-area via align-items:stretch */
+    height: 100%;
     perspective: 1200px;
     cursor: pointer;
     position: relative;
@@ -627,28 +627,18 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
 
-  /* Session screen: full-bleed, no inherited padding */
-  #sessionScreen {
-    padding: 0;
-    justify-content: flex-start;
-    overflow: hidden;
-  }
+  /* Session screen: no inherited padding — layout handled by fixed children */
+  #sessionScreen { padding: 0; }
 
   /* Mobile: full-bleed card — no rounded corners */
   .flashcard-inner { border-radius: 0; }
   .card-face       { border-radius: 0; }
   .card-image-wrap { border-radius: 0; }
 
-  /* Desktop: restore centred card with fixed header and rounded corners */
+  /* Desktop: centred card with rounded corners */
   @media (min-width: 1024px) {
-    :root {
-      --card-w: min(480px, 92vw);
-      --card-h: min(640px, 80vh);
-    }
-    #sessionScreen    { overflow: visible; }
-    .session-header   { position: fixed; top: 0; left: 0; right: 0; background: linear-gradient(to bottom, var(--bg) 60%, transparent); }
-    .card-area        { flex: none; height: 100dvh; align-items: center; }
-    .flashcard-wrap   { width: var(--card-w); height: var(--card-h); }
+    .card-area     { top: 0; display: flex; align-items: center; justify-content: center; }
+    .flashcard-wrap { width: min(480px, 92vw); height: min(640px, 80vh); }
     .flashcard-inner  { border-radius: var(--radius); }
     .card-face        { border-radius: var(--radius); }
     .card-image-wrap  { border-radius: var(--radius) var(--radius) 0 0; }
