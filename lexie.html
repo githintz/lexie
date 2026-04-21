@@ -744,6 +744,46 @@
   }
   .card-base-hint { font-size: 11px; color: rgba(255,255,255,0.35); font-style: italic; }
 
+  /* Example sentence block on card back */
+  .card-example {
+    margin-top: 18px;
+    padding: 12px 14px;
+    background: rgba(0,0,0,0.08);
+    border-radius: 12px;
+    width: 100%;
+    text-align: left;
+  }
+  .card-example-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: #999;
+    margin-bottom: 8px;
+  }
+  .card-example-row { display: flex; align-items: flex-start; gap: 10px; }
+  .card-example-text { flex: 1; min-width: 0; }
+  .example-malayalam {
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    font-size: 15px;
+    color: #1a1a2e;
+    line-height: 1.4;
+    margin-bottom: 3px;
+  }
+  .example-transliteration { font-size: 12px; color: #555; font-style: italic; margin-bottom: 2px; }
+  .example-translation     { font-size: 12px; color: #777; }
+  .speak-example-btn {
+    flex-shrink: 0;
+    background: rgba(240,192,96,0.18);
+    border: 1px solid rgba(240,192,96,0.35);
+    border-radius: 50%;
+    width: 30px; height: 30px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 13px; color: #888;
+    transition: background 0.15s;
+  }
+  .speak-example-btn:hover { background: rgba(240,192,96,0.3); }
+
   /* New form card back (no image) */
   .card-back-form-label {
     font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
@@ -1218,6 +1258,7 @@ function makeFormCard(category, baseKey, formName) {
     transliteration: form.transliteration,
     malayalam:       form.malayalam,
     meaning:         form.meaning,
+    example:         form.example || null,
   };
 }
 
@@ -1409,6 +1450,18 @@ function renderCard() {
           <div class="card-back-form-label">${formLabel}</div>
           <div class="meaning-text">${card.meaning}</div>
           <div class="meaning-context">form of ${card.baseKey} — ${card.baseMeaning}</div>
+          ${card.example ? `
+          <div class="card-example">
+            <div class="card-example-label">Example</div>
+            <div class="card-example-row">
+              <div class="card-example-text">
+                <div class="example-malayalam">${card.example.malayalam}</div>
+                <div class="example-transliteration">${card.example.transliteration}</div>
+                <div class="example-translation">${card.example.translation}</div>
+              </div>
+              <button class="speak-example-btn" onclick="event.stopPropagation();speakMalayalam('${card.example.malayalam.replace(/'/g,"\\'")}',this)">🔊</button>
+            </div>
+          </div>` : ''}
           <div class="card-continue-hint">Tap to continue →</div>
         </div>
       </div>`;
