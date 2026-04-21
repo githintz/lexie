@@ -408,12 +408,16 @@
     bottom: 22px;
   }
 
-  /* Back */
+  /* Back — centered meaning (no image) */
   .card-back {
-    background: var(--cream);
+    background: linear-gradient(145deg, #f7f2e8 0%, #ede8d8 100%);
     transform: rotateY(180deg);
     display: flex;
     flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 32px;
+    text-align: center;
     box-shadow: 0 24px 64px rgba(0,0,0,0.5);
     border: 1px solid rgba(0,0,0,0.04);
   }
@@ -644,8 +648,8 @@
     .card-image-wrap  { border-radius: var(--radius) var(--radius) 0 0; }
   }
 
-  /* Home screen scrollable for when topic list makes it tall */
-  #homeScreen {
+  /* Category + Word-select screens: scroll when content is tall */
+  #categoryScreen, #wordSelectScreen {
     overflow-y: auto;
     justify-content: flex-start;
     -webkit-overflow-scrolling: touch;
@@ -653,35 +657,102 @@
     padding-bottom: 40px;
   }
 
-  /* ── Topic grid (home screen) ── */
-  .topic-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
-    margin: 6px 0 16px;
-    width: 100%;
-  }
-  .topic-btn {
+  /* ── Category grid ── */
+  .cat-grid {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    padding: 10px 12px;
-    border-radius: 12px;
+    gap: 10px;
+    margin: 6px 0 20px;
+    width: 100%;
+  }
+  .cat-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px 18px;
+    border-radius: 16px;
     background: var(--bg2);
-    border: 1.5px solid rgba(255,255,255,0.06);
+    border: 1.5px solid rgba(255,255,255,0.07);
     color: var(--text);
     cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
+    transition: all 0.2s ease;
     text-align: left;
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
   }
-  .topic-btn:hover   { background: rgba(255,255,255,0.05); }
-  .topic-btn.active  { border-color: var(--gold); background: rgba(240,192,96,0.08); }
-  .topic-btn .topic-name { font-size: 12px; font-weight: 500; line-height: 1.3; }
-  .topic-btn .topic-stat { font-size: 11px; opacity: 0.45; margin-top: 3px; }
-  /* "All Topics" spans both columns */
-  .topic-grid .topic-btn:first-child { grid-column: 1 / -1; flex-direction: row; align-items: center; justify-content: space-between; }
-  .topic-grid .topic-btn:first-child .topic-name { font-size: 13px; }
-  .topic-grid .topic-btn:first-child .topic-stat  { margin-top: 0; }
+  .cat-btn:hover:not(:disabled) { background: rgba(255,255,255,0.05); border-color: rgba(240,192,96,0.3); }
+  .cat-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .cat-emoji  { font-size: 22px; width: 26px; text-align: center; }
+  .cat-info   { flex: 1; }
+  .cat-name   { display: block; font-size: 15px; font-weight: 600; color: var(--text); }
+  .cat-stat   { display: block; font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .cat-arrow  { color: var(--muted); font-size: 16px; }
+  .cat-btn.test-mode { border-color: rgba(240,192,96,0.22); background: rgba(240,192,96,0.04); }
+  .cat-btn.test-mode:hover:not(:disabled) { border-color: rgba(240,192,96,0.5); background: rgba(240,192,96,0.08); }
+
+  /* ── Word-select screen ── */
+  .word-select-inner { width: min(480px, 100%); padding: 0 4px; }
+  .word-select-header {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 20px;
+  }
+  .back-link {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 8px 14px;
+    color: var(--muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .back-link:hover { color: var(--text); background: rgba(255,255,255,0.1); }
+  .word-select-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 24px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .word-list { display: flex; flex-direction: column; gap: 10px; }
+  .word-btn {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; padding: 14px 16px; border-radius: 14px;
+    background: var(--surface);
+    border: 1.5px solid rgba(255,255,255,0.06);
+    color: var(--text); cursor: pointer; transition: all 0.2s;
+    text-align: left; width: 100%; font-family: 'DM Sans', sans-serif;
+  }
+  .word-btn:hover    { border-color: rgba(240,192,96,0.3); background: rgba(255,255,255,0.04); }
+  .word-btn.complete { border-color: rgba(240,192,96,0.4); background: rgba(240,192,96,0.06); }
+  .word-btn-main { flex: 1; min-width: 0; }
+  .word-btn-title { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .word-transliteration  { font-size: 16px; font-weight: 600; color: var(--text); }
+  .word-malayalam-script { font-family: 'Noto Sans Malayalam', sans-serif; font-size: 15px; color: rgba(240,192,96,0.7); }
+  .word-meaning { display: block; font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .word-btn-progress { display: flex; flex-direction: column; align-items: flex-end; gap: 5px; min-width: 54px; }
+  .word-stat { font-size: 12px; color: var(--muted); font-weight: 500; }
+  .word-progress-bar  { width: 52px; height: 3px; background: rgba(255,255,255,0.1); border-radius: 2px; overflow: hidden; }
+  .word-progress-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold2)); border-radius: 2px; transition: width 0.3s; }
+
+  /* Card badge row (form name + base word hint) */
+  .card-badge-row {
+    position: absolute; top: 20px; left: 20px; right: 20px;
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .card-base-hint { font-size: 11px; color: rgba(255,255,255,0.35); font-style: italic; }
+
+  /* New form card back (no image) */
+  .card-back-form-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
+    text-transform: uppercase; color: #8b8080; margin-bottom: 18px;
+  }
+  .meaning-context {
+    font-size: 13px; color: #8b949e; font-style: italic;
+    margin-top: 10px; text-align: center;
+  }
 
   /* ── Login Screen ── */
   .login-card {
@@ -807,38 +878,24 @@
   </div>
 </div>
 
-<!-- ══ HOME SCREEN ══ -->
-<div id="homeScreen" class="screen hidden">
+<!-- ══ CATEGORY SCREEN (replaces old home screen) ══ -->
+<div id="categoryScreen" class="screen hidden">
   <div class="home-card">
     <div class="home-logo">🌸</div>
     <h1 class="home-title">Lexie</h1>
     <p class="home-sub" id="homeGreeting">Your personal Malayalam tutor — made with love <span>♥</span></p>
 
-    <p class="section-label">Which topic?</p>
-    <div class="topic-grid" id="topicGrid"></div>
-
-    <p class="section-label">How many cards today?</p>
-    <div class="count-grid" id="countGrid">
-      <button class="count-btn" onclick="selectCount(5)"><span>5</span></button>
-      <button class="count-btn" onclick="selectCount(10)"><span>10</span></button>
-      <button class="count-btn" onclick="selectCount(15)"><span>15</span></button>
-      <button class="count-btn" onclick="selectCount(20)"><span>20</span></button>
-      <button class="count-btn" onclick="selectCount(25)"><span>25</span></button>
-      <button class="count-btn" onclick="selectCount(30)"><span>30</span></button>
-    </div>
-
-    <button class="start-btn" id="startBtn" onclick="startSession()" disabled>
-      Start Learning →
-    </button>
+    <p class="section-label">What would you like to learn?</p>
+    <div class="cat-grid" id="catGrid"></div>
 
     <div class="stats-row">
       <div class="stat-chip">
         <span class="stat-val" id="statSeen">0</span>
-        <span class="stat-lbl">Words seen</span>
+        <span class="stat-lbl">Forms seen</span>
       </div>
       <div class="stat-chip">
-        <span class="stat-val" id="statTotal">200</span>
-        <span class="stat-lbl">Total words</span>
+        <span class="stat-val" id="statTotal">0</span>
+        <span class="stat-lbl">Total forms</span>
       </div>
       <div class="stat-chip">
         <span class="stat-val" id="statPct">0%</span>
@@ -851,10 +908,21 @@
   </div>
 </div>
 
+<!-- ══ WORD SELECT SCREEN ══ -->
+<div id="wordSelectScreen" class="screen hidden">
+  <div class="word-select-inner">
+    <div class="word-select-header">
+      <button class="back-link" onclick="showScreen('categoryScreen')">← Back</button>
+      <h2 class="word-select-title" id="wordSelectTitle">Pronouns</h2>
+    </div>
+    <div class="word-list" id="wordList"></div>
+  </div>
+</div>
+
 <!-- ══ SESSION SCREEN ══ -->
 <div id="sessionScreen" class="screen hidden">
   <div class="session-header">
-    <button class="back-btn" onclick="goHome()">← Home</button>
+    <button class="back-btn" onclick="goHome()">← Back</button>
     <div class="progress-wrap">
       <div class="progress-bar" id="progressBar" style="width:0%"></div>
     </div>
@@ -887,7 +955,7 @@
     </div>
     <div class="done-btns">
       <button class="btn-primary" onclick="goAgain()">Go Again 🔄</button>
-      <button class="btn-secondary" onclick="goHome()">← Back to Home</button>
+      <button class="btn-secondary" onclick="goHome()">← Back</button>
     </div>
   </div>
 </div>
@@ -928,18 +996,35 @@ function clearSession()        { try { localStorage.removeItem(SESSION_KEY); } c
 // ════════════════════════════════════════════════════════
 //  APP STATE
 // ════════════════════════════════════════════════════════
-let currentUser     = null;   // username string
-let currentName     = null;   // display name
-let userProgress    = {};     // { wordId: { seen, lastSeen } } — cached from Supabase
-let selectedCount   = null;
-let selectedCategory = null;  // null = All Topics
-let deck            = [];
-let currentIndex    = 0;
-let isFlipped       = false;
-let isSpeaking      = false;
+let currentUser      = null;   // username string
+let currentName      = null;   // display name
+let userProgress     = {};     // { "category|baseKey|formName": { seen, lastSeen } }
+let selectedCategory = null;   // 'pronouns' | 'demonstratives' | 'verbs'
+let selectedBaseKey  = null;   // e.g. 'njan'
+let isTestMode       = false;
+let deck             = [];
+let currentIndex     = 0;
+let isFlipped        = false;
+let isSpeaking       = false;
 
-// Derive ordered category list from the word data (preserves insertion order)
-const CATEGORIES = [...new Set(WORDS.map(w => w.category))];
+// Category presentation metadata (order matters — this determines screen order)
+const CAT_META = {
+  pronouns:       { label: 'Pronouns',       emoji: '👤' },
+  demonstratives: { label: 'Demonstratives', emoji: '👉' },
+  verbs:          { label: 'Verbs',          emoji: '⚡' }
+};
+const CATEGORIES = Object.keys(CAT_META);
+
+// Compute total number of forms across the whole lexicon (once, at load)
+const TOTAL_FORMS = CATEGORIES.reduce((sum, cat) =>
+  sum + Object.values(LEXICON[cat]).reduce((s, w) => s + Object.keys(w.forms).length, 0), 0);
+
+// Format "negative_present" → "Negative present"
+function formatFormName(name) {
+  return name.replace(/_/g, ' ').replace(/^./, c => c.toUpperCase());
+}
+
+function formKey(category, baseKey, formName) { return `${category}|${baseKey}|${formName}`; }
 
 // ════════════════════════════════════════════════════════
 //  LOADING UI HELPERS
@@ -1076,15 +1161,14 @@ async function doRegister() {
 }
 
 function doLogout() {
-  currentUser   = null;
-  currentName   = null;
-  userProgress  = {};
+  currentUser      = null;
+  currentName      = null;
+  userProgress     = {};
+  selectedCategory = null;
+  selectedBaseKey  = null;
+  isTestMode       = false;
   clearSession();
   window.speechSynthesis && window.speechSynthesis.cancel();
-  selectedCount    = null;
-  selectedCategory = null;
-  document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('selected'));
-  document.getElementById('startBtn').disabled = true;
   document.getElementById('loginUser').value   = '';
   document.getElementById('loginPass').value   = '';
   document.getElementById('loginError').textContent = '';
@@ -1102,7 +1186,7 @@ async function enterApp(name) {
   ];
   document.getElementById('homeGreeting').innerHTML =
     greetings[Math.floor(Math.random() * greetings.length)];
-  showScreen('homeScreen');
+  showScreen('categoryScreen');
 }
 
 // ════════════════════════════════════════════════════════
@@ -1117,73 +1201,167 @@ function shuffle(arr) {
   return a;
 }
 
-function getCardDeck(requestedCount, progress) {
-  const pool    = selectedCategory ? WORDS.filter(w => w.category === selectedCategory) : WORDS;
-  const seenIds = new Set(Object.keys(progress).filter(k => progress[k].seen));
-  const seen    = pool.filter(w =>  seenIds.has(w.id));
-  const unseen  = pool.filter(w => !seenIds.has(w.id));
-
-  if (seen.length === 0) return shuffle(unseen).slice(0, requestedCount);
-
-  let newCount  = Math.round(requestedCount * 0.30);
-  let seenCount = requestedCount - newCount;
-  if (unseen.length < newCount)  { newCount  = unseen.length; seenCount = requestedCount - newCount; }
-  if (seen.length  < seenCount)  { seenCount = seen.length; }
-
-  return shuffle([...shuffle(unseen).slice(0, newCount), ...shuffle(seen).slice(0, seenCount)]);
+// Seen-ID set helper
+function seenIdSet() {
+  return new Set(Object.keys(userProgress).filter(k => userProgress[k]?.seen));
 }
 
-// ════════════════════════════════════════════════════════
-//  HOME SCREEN
-// ════════════════════════════════════════════════════════
-function updateHomeStats() {
-  const progress = loadProgress();
-  const seenIds  = new Set(Object.keys(progress).filter(k => progress[k].seen));
-  const pool     = selectedCategory ? WORDS.filter(w => w.category === selectedCategory) : WORDS;
-  const seenCount = pool.filter(w => seenIds.has(w.id)).length;
-  const total     = pool.length;
-  document.getElementById('statSeen').textContent  = seenCount;
-  document.getElementById('statTotal').textContent = total;
-  document.getElementById('statPct').textContent   = total ? Math.round((seenCount / total) * 100) + '%' : '0%';
-}
-
-function renderTopicGrid() {
-  const grid     = document.getElementById('topicGrid');
-  const progress = loadProgress();
-  const seenIds  = new Set(Object.keys(progress).filter(k => progress[k].seen));
-  const buttons  = [
-    makeTopicBtn('All Topics', WORDS.length, WORDS.filter(w => seenIds.has(w.id)).length, selectedCategory === null),
-    ...CATEGORIES.map(cat => {
-      const catWords = WORDS.filter(w => w.category === cat);
-      const catSeen  = catWords.filter(w => seenIds.has(w.id)).length;
-      return makeTopicBtn(cat, catWords.length, catSeen, selectedCategory === cat);
-    })
-  ];
-  grid.replaceChildren(...buttons);
-}
-
-function makeTopicBtn(label, total, seen, active) {
-  const btn = document.createElement('button');
-  btn.className = 'topic-btn' + (active ? ' active' : '');
-  btn.innerHTML = `<span class="topic-name">${label}</span><span class="topic-stat">${seen}/${total}</span>`;
-  btn.onclick = () => {
-    selectedCategory = label === 'All Topics' ? null : label;
-    renderTopicGrid();
-    updateHomeStats();
+// Build a flat card from a (category, baseKey, formName) triple
+function makeFormCard(category, baseKey, formName) {
+  const base = LEXICON[category][baseKey];
+  const form = base.forms[formName];
+  return {
+    id: formKey(category, baseKey, formName),
+    category, baseKey, formName,
+    baseMalayalam: base.malayalam,
+    baseMeaning:   base.meaning,
+    transliteration: form.transliteration,
+    malayalam:       form.malayalam,
+    meaning:         form.meaning,
   };
-  return btn;
 }
 
-function selectCount(n) {
-  selectedCount = n;
-  document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('selected'));
-  event.currentTarget.classList.add('selected');
-  document.getElementById('startBtn').disabled = false;
+// All forms of a single base word, in natural order
+function buildWordDeck(category, baseKey) {
+  return Object.keys(LEXICON[category][baseKey].forms)
+    .map(formName => makeFormCard(category, baseKey, formName));
 }
 
-function startSession() {
-  if (!selectedCount) return;
-  deck = getCardDeck(selectedCount, loadProgress());
+// All forms the user has already seen (test mode), shuffled
+function buildTestDeck() {
+  const seen = seenIdSet();
+  const cards = [];
+  for (const cat of CATEGORIES) {
+    for (const baseKey of Object.keys(LEXICON[cat])) {
+      for (const formName of Object.keys(LEXICON[cat][baseKey].forms)) {
+        if (seen.has(formKey(cat, baseKey, formName))) {
+          cards.push(makeFormCard(cat, baseKey, formName));
+        }
+      }
+    }
+  }
+  return shuffle(cards);
+}
+
+// ════════════════════════════════════════════════════════
+//  STATS HELPERS
+// ════════════════════════════════════════════════════════
+function categoryStats(category) {
+  const seen = seenIdSet();
+  let s = 0, t = 0;
+  for (const baseKey of Object.keys(LEXICON[category])) {
+    for (const formName of Object.keys(LEXICON[category][baseKey].forms)) {
+      t++;
+      if (seen.has(formKey(category, baseKey, formName))) s++;
+    }
+  }
+  return { seen: s, total: t };
+}
+
+function wordStats(category, baseKey) {
+  const seen = seenIdSet();
+  const forms = Object.keys(LEXICON[category][baseKey].forms);
+  let s = 0;
+  for (const formName of forms) if (seen.has(formKey(category, baseKey, formName))) s++;
+  return { seen: s, total: forms.length };
+}
+
+// ════════════════════════════════════════════════════════
+//  CATEGORY SCREEN
+// ════════════════════════════════════════════════════════
+function updateOverallStats() {
+  const totalSeen = seenIdSet().size;
+  document.getElementById('statSeen').textContent  = totalSeen;
+  document.getElementById('statTotal').textContent = TOTAL_FORMS;
+  document.getElementById('statPct').textContent   =
+    TOTAL_FORMS ? Math.round(totalSeen / TOTAL_FORMS * 100) + '%' : '0%';
+}
+
+function renderCategoryGrid() {
+  const grid = document.getElementById('catGrid');
+  const totalSeen = seenIdSet().size;
+
+  const catBtns = CATEGORIES.map(cat => {
+    const { label, emoji } = CAT_META[cat];
+    const { seen, total } = categoryStats(cat);
+    const btn = document.createElement('button');
+    btn.className = 'cat-btn';
+    btn.innerHTML = `
+      <span class="cat-emoji">${emoji}</span>
+      <span class="cat-info">
+        <span class="cat-name">${label}</span>
+        <span class="cat-stat">${seen}/${total} forms learned</span>
+      </span>
+      <span class="cat-arrow">→</span>`;
+    btn.onclick = () => { selectedCategory = cat; showScreen('wordSelectScreen'); };
+    return btn;
+  });
+
+  const testBtn = document.createElement('button');
+  testBtn.className = 'cat-btn test-mode';
+  testBtn.disabled = totalSeen === 0;
+  testBtn.innerHTML = `
+    <span class="cat-emoji">🎯</span>
+    <span class="cat-info">
+      <span class="cat-name">Test Mode</span>
+      <span class="cat-stat">${totalSeen === 0 ? 'Learn some forms first' : totalSeen + ' forms to review'}</span>
+    </span>
+    <span class="cat-arrow">→</span>`;
+  testBtn.onclick = () => { if (totalSeen > 0) startTestMode(); };
+
+  grid.replaceChildren(...catBtns, testBtn);
+  updateOverallStats();
+}
+
+// ════════════════════════════════════════════════════════
+//  WORD SELECT SCREEN
+// ════════════════════════════════════════════════════════
+function renderWordList() {
+  if (!selectedCategory) return;
+  document.getElementById('wordSelectTitle').textContent = CAT_META[selectedCategory].label;
+
+  const list = document.getElementById('wordList');
+  const entries = Object.entries(LEXICON[selectedCategory]);
+
+  const buttons = entries.map(([baseKey, word]) => {
+    const { seen, total } = wordStats(selectedCategory, baseKey);
+    const pct = total ? Math.round(seen / total * 100) : 0;
+    const btn = document.createElement('button');
+    btn.className = 'word-btn' + (seen === total && total > 0 ? ' complete' : '');
+    btn.innerHTML = `
+      <div class="word-btn-main">
+        <div class="word-btn-title">
+          <span class="word-transliteration">${baseKey}</span>
+          <span class="word-malayalam-script">${word.malayalam}</span>
+        </div>
+        <span class="word-meaning">${word.meaning}</span>
+      </div>
+      <div class="word-btn-progress">
+        <span class="word-stat">${seen}/${total}</span>
+        <div class="word-progress-bar"><div class="word-progress-fill" style="width:${pct}%"></div></div>
+      </div>`;
+    btn.onclick = () => startWordSession(baseKey);
+    return btn;
+  });
+
+  list.replaceChildren(...buttons);
+}
+
+function startWordSession(baseKey) {
+  selectedBaseKey = baseKey;
+  isTestMode = false;
+  deck = buildWordDeck(selectedCategory, baseKey);
+  currentIndex = 0;
+  showScreen('sessionScreen');
+  renderCard();
+}
+
+function startTestMode() {
+  isTestMode = true;
+  selectedCategory = null;
+  selectedBaseKey = null;
+  deck = buildTestDeck();
+  if (deck.length === 0) return;
   currentIndex = 0;
   showScreen('sessionScreen');
   renderCard();
@@ -1201,8 +1379,11 @@ function updateSessionProgress() {
 function renderCard() {
   isFlipped = false;
   updateSessionProgress();
-  const word      = deck[currentIndex];
+  const card      = deck[currentIndex];
   const container = document.getElementById('cardContainer');
+  const formLabel = formatFormName(card.formName);
+  const baseHint  = `${card.baseKey} — ${card.baseMeaning}`;
+  const safeMal   = card.malayalam.replace(/'/g, "\\'");
 
   const old = container.querySelector('.flashcard-wrap');
   if (old) { old.classList.add('exiting'); setTimeout(() => old.remove(), 350); }
@@ -1215,34 +1396,25 @@ function renderCard() {
         <div class="card-face card-front" id="cardFront">
           <div class="card-front-deco"></div>
           <div class="card-front-deco2"></div>
-          <div class="card-badge">Card ${currentIndex + 1}</div>
-          <div class="card-phonetic">${word.phonetic}</div>
-          <div class="card-malayalam">${word.malayalam}</div>
-          <button class="speak-btn" id="speakBtn" onclick="speakWord(event,'${word.malayalam.replace(/'/g,"\\'")}')">🔊</button>
+          <div class="card-badge-row">
+            <span class="card-badge">${formLabel}</span>
+            <span class="card-base-hint">${baseHint}</span>
+          </div>
+          <div class="card-phonetic">${card.transliteration}</div>
+          <div class="card-malayalam">${card.malayalam}</div>
+          <button class="speak-btn" id="speakBtn" onclick="speakWord(event,'${safeMal}')">🔊</button>
           <div class="card-hint">Tap anywhere to reveal</div>
         </div>
         <div class="card-face card-back" id="cardBack">
-          <div class="card-image-wrap">
-            <img class="card-image" src="${word.imageUrl}" alt="${word.meaning}"
-              onload="this.style.opacity=1"
-              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
-              style="opacity:0;transition:opacity 0.4s;">
-            <div class="card-image-fallback">
-              <div class="fb-mal">${word.malayalam}</div>
-              <div class="fb-ph">${word.phonetic}</div>
-            </div>
-          </div>
-          <div class="card-back-body">
-            <div class="meaning-label">Meaning</div>
-            <div class="meaning-text">${word.meaning}</div>
-            <div class="meaning-phonetic">${word.phonetic}</div>
-          </div>
+          <div class="card-back-form-label">${formLabel}</div>
+          <div class="meaning-text">${card.meaning}</div>
+          <div class="meaning-context">form of ${card.baseKey} — ${card.baseMeaning}</div>
           <div class="card-continue-hint">Tap to continue →</div>
         </div>
       </div>`;
     wrap.addEventListener('click', handleCardClick);
     container.appendChild(wrap);
-    setTimeout(() => speakWordAuto(word.malayalam), 600);
+    setTimeout(() => speakWordAuto(card.malayalam), 600);
   }, old ? 300 : 0);
 }
 
@@ -1336,17 +1508,16 @@ if (window.speechSynthesis) {
 //  DONE SCREEN
 // ════════════════════════════════════════════════════════
 function showDoneScreen() {
-  const progress  = loadProgress();
-  const seenCount = Object.values(progress).filter(p => p.seen).length;
-  const pct       = Math.round((seenCount / WORDS.length) * 100);
+  const totalSeen = seenIdSet().size;
+  const pct       = TOTAL_FORMS ? Math.round((totalSeen / TOTAL_FORMS) * 100) : 0;
   const name      = currentName || 'you';
 
   document.getElementById('doneCards').textContent = deck.length;
-  document.getElementById('doneSeen').textContent  = seenCount;
+  document.getElementById('doneSeen').textContent  = totalSeen;
   document.getElementById('donePct').textContent   = pct + '%';
 
   const msgs = [
-    `Amazing work, ${name}! Every card counts. 🌸`,
+    `Amazing work, ${name}! Every form counts. 🌸`,
     `Fantastic session, ${name}! Malayalam suits you. 💫`,
     `Keep it up, ${name}! You're doing brilliantly! 🎊`,
     `${name}, you're unstoppable! 🔥`,
@@ -1373,19 +1544,31 @@ function launchConfetti() {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
-  if (id === 'homeScreen') { renderTopicGrid(); updateHomeStats(); }
+  if (id === 'categoryScreen')   renderCategoryGrid();
+  if (id === 'wordSelectScreen') renderWordList();
 }
 
+// Session/done back button — goes to the most useful parent screen
 function goHome() {
   window.speechSynthesis && window.speechSynthesis.cancel();
-  selectedCount = null;
-  document.querySelectorAll('.count-btn').forEach(b => b.classList.remove('selected'));
-  document.getElementById('startBtn').disabled = true;
-  showScreen('homeScreen');
+  if (isTestMode || !selectedCategory) {
+    isTestMode = false;
+    showScreen('categoryScreen');
+  } else {
+    showScreen('wordSelectScreen');
+  }
 }
 
 function goAgain() {
-  deck = getCardDeck(deck.length, loadProgress());
+  if (isTestMode) {
+    deck = buildTestDeck();
+  } else if (selectedCategory && selectedBaseKey) {
+    deck = buildWordDeck(selectedCategory, selectedBaseKey);
+  } else {
+    showScreen('categoryScreen');
+    return;
+  }
+  if (deck.length === 0) { showScreen('categoryScreen'); return; }
   currentIndex = 0;
   showScreen('sessionScreen');
   renderCard();
