@@ -525,6 +525,17 @@
     from { opacity: 1; transform: translateY(0) scale(1); }
     to   { opacity: 0; transform: translateY(-30px) scale(0.95); }
   }
+  /* Subtle nudge on the flipped card to hint swipe gesture */
+  .flashcard-inner.flipped ~ * .card-continue-hint,
+  .flashcard-wrap .card-continue-hint {
+    animation: none;
+  }
+  @keyframes nudgeHint {
+    0%,100% { transform: translateX(0); }
+    20%     { transform: translateX(-12px) rotate(-1.5deg); }
+    60%     { transform: translateX(10px)  rotate(1deg); }
+  }
+  }
 
   /* ════════════════════════════════
      DONE SCREEN
@@ -1555,65 +1566,85 @@ document.addEventListener('click', (e) => {
 let _swipeConsumed = false;
 
 function addSwipeHandlers(wrap) {
-  let startX = 0, startY = 0, dragging = false, horizontal = null;
+  let startX = 0, startY = 0;
+  let dragging = false, horizontal = null, didMove = false;
 
   wrap.addEventListener('touchstart', e => {
-    if (!isFlipped) return;
+    if (e.target.closest('.speak-btn') || e.target.closest('.speak-example-btn') || e.target.closest('.word-chip')) return;
     startX = e.touches[0].clientX;
     startY = e.touches[0].clientY;
-    dragging = true;
-    horizontal = null;
+    dragging = true; horizontal = null; didMove = false;
     wrap.style.transition = 'none';
+    wrap.style.willChange = 'transform, opacity';
   }, { passive: true });
 
   wrap.addEventListener('touchmove', e => {
-    if (!dragging || !isFlipped) return;
+    if (!dragging) return;
     const dx = e.touches[0].clientX - startX;
     const dy = e.touches[0].clientY - startY;
     if (horizontal === null) {
-      if (Math.abs(dx) > Math.abs(dy) + 6) horizontal = true;
-      else if (Math.abs(dy) > Math.abs(dx) + 6) { horizontal = false; dragging = false; return; }
+      if (Math.abs(dx) > Math.abs(dy) + 5)      { horizontal = true; }
+      else if (Math.abs(dy) > Math.abs(dx) + 5) { horizontal = false; dragging = false; return; }
       else return;
     }
     if (!horizontal) return;
     e.preventDefault();
-    const rot = dx * 0.04;
+    didMove = true;
+    const rot   = dx * 0.06;
+    const alpha = Math.max(0.25, 1 - Math.abs(dx) / (window.innerWidth * 0.65));
     wrap.style.transform = `translateX(${dx}px) rotate(${rot}deg)`;
-    wrap.style.opacity = String(Math.max(0, 1 - Math.abs(dx) / (window.innerWidth * 0.75)));
-    const hint = document.getElementById('cardContinueHint');
-    if (hint) hint.style.opacity = '0';
+    wrap.style.opacity   = String(alpha);
   }, { passive: false });
 
-  wrap.addEventListener('touchend', e => {
-    if (!dragging || !isFlipped || horizontal === false) { dragging = false; return; }
+  const onEnd = e => {
+    if (!dragging) return;
     dragging = false;
-    const dx = e.changedTouches[0].clientX - startX;
+    wrap.style.willChange = '';
+    if (!didMove || !horizontal) return;
+    const dx = (e.changedTouches ? e.changedTouches[0] : e).clientX - startX;
     if (Math.abs(dx) > 72) {
       _swipeConsumed = true;
-      setTimeout(() => { _swipeConsumed = false; }, 400);
+      setTimeout(() => { _swipeConsumed = false; }, 500);
       const dir = dx > 0 ? 1 : -1;
-      wrap.style.transition = 'transform 0.28s ease, opacity 0.28s ease';
-      wrap.style.transform = `translateX(${dir * 110}vw) rotate(${dir * 12}deg)`;
-      wrap.style.opacity = '0';
-      setTimeout(advanceCard, 280);
+      wrap.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+      wrap.style.transform  = `translateX(${dir * 115}vw) rotate(${dir * 15}deg)`;
+      wrap.style.opacity    = '0';
+      if (isFlipped) {
+        setTimeout(advanceCard, 300);
+      } else {
+        // flipped was skipped — flip first so it's not counted as seen, then advance
+        setTimeout(advanceCard, 300);
+      }
     } else {
-      wrap.style.transition = 'transform 0.25s ease, opacity 0.25s ease';
-      wrap.style.transform = '';
-      wrap.style.opacity = '';
-      const hint = document.getElementById('cardContinueHint');
-      if (hint) hint.style.opacity = '';
+      wrap.style.transition = 'transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s ease';
+      wrap.style.transform  = '';
+      wrap.style.opacity    = '';
     }
-  }, { passive: true });
+  };
+  wrap.addEventListener('touchend',    onEnd, { passive: true });
+  wrap.addEventListener('touchcancel', onEnd, { passive: true });
 }
 
 function handleCardClick(e) {
-  if (e.target.closest('.speak-btn')) return;
+  if (e.target.closest('.speak-btn') || e.target.closest('.speak-example-btn')) return;
   if (e.target.closest('.word-chip')) return;
   if (_swipeConsumed) return;
   if (!isFlipped) {
     isFlipped = true;
     document.getElementById('cardInner').classList.add('flipped');
     markWordsSeen([deck[currentIndex].id]); // fire-and-forget async
+    // brief nudge 700ms after flip to hint the swipe gesture
+    setTimeout(() => {
+      const wrap = document.querySelector('.flashcard-wrap');
+      if (wrap && isFlipped) {
+        wrap.style.transition = 'transform 0.5s cubic-bezier(0.34,1.56,0.64,1), opacity 0.2s';
+        wrap.style.transform = 'translateX(-14px) rotate(-1.5deg)';
+        setTimeout(() => {
+          wrap.style.transform = 'translateX(10px) rotate(1deg)';
+          setTimeout(() => { wrap.style.transform = ''; wrap.style.transition = ''; }, 200);
+        }, 200);
+      }
+    }, 700);
   } else {
     setTimeout(advanceCard, 280);
   }
