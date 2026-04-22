@@ -784,6 +784,42 @@
   }
   .speak-example-btn:hover { background: rgba(240,192,96,0.3); }
 
+  .word-chip {
+    display: inline;
+    cursor: pointer;
+    border-bottom: 1px dashed rgba(80,80,180,0.4);
+    color: #333;
+    transition: background 0.1s;
+    border-radius: 3px;
+    padding: 0 1px;
+  }
+  .word-chip:hover { background: rgba(80,80,180,0.1); }
+  .word-chip.active { background: rgba(80,80,180,0.15); }
+  .word-popup {
+    position: fixed;
+    background: #1a1a2e;
+    color: #f0c060;
+    padding: 6px 11px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-style: normal;
+    pointer-events: none;
+    z-index: 9999;
+    white-space: nowrap;
+    box-shadow: 0 3px 12px rgba(0,0,0,0.35);
+    transform: translate(-50%, -110%);
+    transition: opacity 0.12s;
+  }
+  .word-popup::after {
+    content: '';
+    position: absolute;
+    bottom: -5px; left: 50%;
+    transform: translateX(-50%);
+    border: 5px solid transparent;
+    border-bottom: none;
+    border-top-color: #1a1a2e;
+  }
+
   /* New form card back (no image) */
   .card-back-form-label {
     font-size: 11px; font-weight: 700; letter-spacing: 0.18em;
@@ -1456,7 +1492,7 @@ function renderCard() {
             <div class="card-example-row">
               <div class="card-example-text">
                 <div class="example-malayalam">${card.example.malayalam}</div>
-                <div class="example-transliteration">${card.example.transliteration}</div>
+                <div class="example-transliteration">${renderChips(card.example)}</div>
                 <div class="example-translation">${card.example.translation}</div>
               </div>
               <button class="speak-example-btn" onclick="event.stopPropagation();speakMalayalam('${card.example.malayalam.replace(/'/g,"\\'")}',this)">🔊</button>
@@ -1471,8 +1507,47 @@ function renderCard() {
   }, old ? 300 : 0);
 }
 
+/* ── Word-chip popup ──────────────────────────────────── */
+let _popup = null;
+let _activeChip = null;
+
+function renderChips(example) {
+  if (!example.words || example.words.length === 0) {
+    return example.transliteration;
+  }
+  return example.words.map((item, i) =>
+    `<span class="word-chip" data-meaning="${item.m.replace(/"/g,'&quot;')}" onclick="showChipPopup(event,this)">${item.w}</span>`
+  ).join(' ');
+}
+
+function showChipPopup(e, chip) {
+  e.stopPropagation();
+  if (_activeChip === chip) { hideChipPopup(); return; }
+  hideChipPopup();
+  _activeChip = chip;
+  chip.classList.add('active');
+  const popup = document.createElement('div');
+  popup.className = 'word-popup';
+  popup.textContent = chip.dataset.meaning;
+  document.body.appendChild(popup);
+  _popup = popup;
+  const r = chip.getBoundingClientRect();
+  popup.style.left = (r.left + r.width / 2) + 'px';
+  popup.style.top = (r.top + window.scrollY) + 'px';
+}
+
+function hideChipPopup() {
+  if (_popup) { _popup.remove(); _popup = null; }
+  if (_activeChip) { _activeChip.classList.remove('active'); _activeChip = null; }
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.word-chip')) hideChipPopup();
+});
+
 function handleCardClick(e) {
   if (e.target.closest('.speak-btn')) return;
+  if (e.target.closest('.word-chip')) return;
   if (!isFlipped) {
     isFlipped = true;
     document.getElementById('cardInner').classList.add('flipped');
