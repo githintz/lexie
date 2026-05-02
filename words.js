@@ -281,7 +281,217 @@ const LEXICON = {
 
   // ── NOUNS ─────────────────────────────────────────────
   nouns: {
-    // words coming soon
+
+    // ── Essential ──────────────────────────────────────
+    "vellam": {
+      malayalam: "വെള്ളം", meaning: "water",
+      forms: {
+        nominative: { transliteration: "vellam",      malayalam: "വെള്ളം",       meaning: "water",        example: { malayalam: "ഒരു ഗ്ലാസ് വെള്ളം തരൂ",          transliteration: "Oru glass vellam tharoo",         translation: "Please give a glass of water", words: [{w:"Oru",m:"one / a"},{w:"glass",m:"glass"},{w:"vellam",m:"water"},{w:"tharoo",m:"give (me)"}] } },
+        dative:     { transliteration: "vellatthinu", malayalam: "വെള്ളത്തിന്",  meaning: "for water",    example: { malayalam: "ഞാൻ വെള്ളത്തിന് ചോദിച്ചു",        transliteration: "Njan vellatthinu chōdichhu",      translation: "I asked for water",            words: [{w:"Njan",m:"I"},{w:"vellatthinu",m:"for water"},{w:"chōdichhu",m:"asked"}] } },
+        locative:   { transliteration: "vellatthil",  malayalam: "വെള്ളത്തിൽ",  meaning: "in the water", example: { malayalam: "ഉപ്പ് വെള്ളത്തിൽ ഇടൂ",            transliteration: "Uppu vellatthil iṭoo",            translation: "Put salt in the water",        words: [{w:"Uppu",m:"salt"},{w:"vellatthil",m:"in the water"},{w:"iṭoo",m:"put (it)"}] } }
+      }
+    },
+    "bhakshanam": {
+      malayalam: "ഭക്ഷണം", meaning: "food",
+      forms: {
+        nominative: { transliteration: "bhakshanam",       malayalam: "ഭക്ഷണം",         meaning: "food",         example: { malayalam: "ഭക്ഷണം തയ്യാറാണ്",                   transliteration: "Bhakshanam thayyaaraanu",          translation: "The food is ready",              words: [{w:"Bhakshanam",m:"food"},{w:"thayyaaraanu",m:"is ready"}] } },
+        dative:     { transliteration: "bhakshanatthinu",  malayalam: "ഭക്ഷണത്തിന്",   meaning: "for the food", example: { malayalam: "ഭക്ഷണത്തിന് നന്ദി",                    transliteration: "Bhakshanatthinu nandi",            translation: "Thanks for the food",            words: [{w:"Bhakshanatthinu",m:"for the food"},{w:"nandi",m:"thank you"}] } },
+        locative:   { transliteration: "bhakshanatthil",   malayalam: "ഭക്ഷണത്തിൽ",   meaning: "in the food",  example: { malayalam: "ഭക്ഷണത്തിൽ ഉപ്പ് കൂടുതലാണ്",        transliteration: "Bhakshanatthil uppu kooduthalanu", translation: "There is too much salt in the food", words: [{w:"Bhakshanatthil",m:"in the food"},{w:"uppu",m:"salt"},{w:"kooduthalanu",m:"is too much"}] } }
+      }
+    },
+    "choru": {
+      malayalam: "ചോറ്", meaning: "cooked rice",
+      forms: {
+        nominative: { transliteration: "choru",    malayalam: "ചോറ്",      meaning: "rice (cooked)", example: { malayalam: "ഞാൻ ചോറ് കഴിക്കുന്നു",            transliteration: "Njan choru kazhikkunnu",    translation: "I am eating rice",               words: [{w:"Njan",m:"I"},{w:"choru",m:"rice"},{w:"kazhikkunnu",m:"am eating"}] } },
+        genitive:   { transliteration: "chorinte",  malayalam: "ചോറിന്റെ",  meaning: "of the rice",   example: { malayalam: "ഇത് ചോറിന്റെ മണം ആണ്",           transliteration: "Ithu chorinte manam aanu",  translation: "This is the smell of rice",      words: [{w:"Ithu",m:"this"},{w:"chorinte",m:"of the rice"},{w:"manam",m:"smell"},{w:"aanu",m:"is"}] } },
+        dative:     { transliteration: "chorinu",   malayalam: "ചോറിന്",    meaning: "for the rice",  example: { malayalam: "ഇന്ന് ചോറിന് കറി ഉണ്ടോ?",       transliteration: "Innu chorinu karri undō?",  translation: "Is there curry with the rice today?", words: [{w:"Innu",m:"today"},{w:"chorinu",m:"for the rice"},{w:"karri",m:"curry"},{w:"undō",m:"is there?"}] } }
+      }
+    },
+    "chaaya": {
+      malayalam: "ചായ", meaning: "tea",
+      forms: {
+        nominative: { transliteration: "chaaya",      malayalam: "ചായ",        meaning: "tea",          example: { malayalam: "ഒരു ചായ തരൂ",                     transliteration: "Oru chaaya tharoo",          translation: "Give me a tea",          words: [{w:"Oru",m:"one / a"},{w:"chaaya",m:"tea"},{w:"tharoo",m:"give (me)"}] } },
+        genitive:   { transliteration: "chaayayuṭe",  malayalam: "ചായയുടെ",   meaning: "tea's / of the tea", example: { malayalam: "ഇത് ചായയുടെ കപ്പ് ആണ്",      transliteration: "Ithu chaayayuṭe kappu aanu", translation: "This is the tea cup",    words: [{w:"Ithu",m:"this"},{w:"chaayayuṭe",m:"tea's"},{w:"kappu",m:"cup"},{w:"aanu",m:"is"}] } },
+        dative:     { transliteration: "chaayakku",   malayalam: "ചായക്ക്",   meaning: "for tea",      example: { malayalam: "ചായക്ക് പഞ്ചസാര വേണോ?",          transliteration: "Chaayakku panjasaara venō?", translation: "Do you want sugar for the tea?", words: [{w:"Chaayakku",m:"for the tea"},{w:"panjasaara",m:"sugar"},{w:"venō",m:"do you want?"}] } }
+      }
+    },
+    "kaappi": {
+      malayalam: "കാപ്പി", meaning: "coffee",
+      forms: {
+        nominative: { transliteration: "kaappi",      malayalam: "കാപ്പി",      meaning: "coffee",           example: { malayalam: "ഞാൻ കാപ്പി ഇഷ്ടപ്പെടുന്നു",         transliteration: "Njan kaappi ishtappedunnu",    translation: "I like coffee",                 words: [{w:"Njan",m:"I"},{w:"kaappi",m:"coffee"},{w:"ishtappedunnu",m:"like"}] } },
+        genitive:   { transliteration: "kaappiyuṭe",  malayalam: "കാപ്പിയുടെ", meaning: "coffee's",          example: { malayalam: "ഇത് കാപ്പിയുടെ മണം ആണ്",           transliteration: "Ithu kaappiyuṭe manam aanu",  translation: "This is the smell of coffee",    words: [{w:"Ithu",m:"this"},{w:"kaappiyuṭe",m:"coffee's"},{w:"manam",m:"smell"},{w:"aanu",m:"is"}] } },
+        dative:     { transliteration: "kaappikku",   malayalam: "കാപ്പിക്ക്", meaning: "for coffee",        example: { malayalam: "കാപ്പിക്ക് പാൽ വേണോ?",             transliteration: "Kaappikku paal venō?",         translation: "Do you want milk in the coffee?", words: [{w:"Kaappikku",m:"for the coffee"},{w:"paal",m:"milk"},{w:"venō",m:"do you want?"}] } }
+      }
+    },
+
+    // ── People ──────────────────────────────────────────
+    "aaḷ": {
+      malayalam: "ആൾ", meaning: "person",
+      forms: {
+        nominative: { transliteration: "aaḷ",      malayalam: "ആൾ",      meaning: "person",            example: { malayalam: "ആ ആൾ ആരാണ്?",                    transliteration: "Aa aaḷ aaraanu?",           translation: "Who is that person?",           words: [{w:"Aa",m:"that"},{w:"aaḷ",m:"person"},{w:"aaraanu",m:"who is?"}] } },
+        genitive:   { transliteration: "aaḷuṭe",   malayalam: "ആളുടെ",   meaning: "person's",          example: { malayalam: "ആ ആളുടെ പേര് എന്താണ്?",          transliteration: "Aa aaḷuṭe peru enthānu?",   translation: "What is that person's name?",   words: [{w:"Aa",m:"that"},{w:"aaḷuṭe",m:"person's"},{w:"peru",m:"name"},{w:"enthānu",m:"what is?"}] } },
+        dative:     { transliteration: "aaḷkku",   malayalam: "ആൾക്ക്",  meaning: "to / for the person", example: { malayalam: "ആ ആൾക്ക് ഇത് കൊടുക്കൂ",          transliteration: "Aa aaḷkku ithu kodukkoo",   translation: "Give this to that person",      words: [{w:"Aa",m:"that"},{w:"aaḷkku",m:"to the person"},{w:"ithu",m:"this"},{w:"kodukkoo",m:"give"}] } }
+      }
+    },
+    "aan": {
+      malayalam: "ആൺ", meaning: "man / male",
+      forms: {
+        nominative: { transliteration: "aan",      malayalam: "ആൺ",       meaning: "man",       example: { malayalam: "ഒരു ആൺ ഇവിടെ ഉണ്ട്",              transliteration: "Oru aan ivide undu",       translation: "A man is here",                words: [{w:"Oru",m:"a"},{w:"aan",m:"man"},{w:"ivide",m:"here"},{w:"undu",m:"is"}] } },
+        genitive:   { transliteration: "aaninte",  malayalam: "ആണിന്റെ",  meaning: "man's",     example: { malayalam: "ആ ആണിന്റെ ഷർട്ട് ചുവപ്പ് ആണ്",   transliteration: "Aa aaninte shart chuvappu aanu", translation: "That man's shirt is red",  words: [{w:"Aa",m:"that"},{w:"aaninte",m:"man's"},{w:"shart",m:"shirt"},{w:"chuvappu",m:"red"},{w:"aanu",m:"is"}] } },
+        dative:     { transliteration: "aaninu",   malayalam: "ആണിന്",    meaning: "to the man", example: { malayalam: "ആ ആണിന് ഇത് അറിയില്ല",           transliteration: "Aa aaninu ithu ariyilla",  translation: "That man doesn't know this",   words: [{w:"Aa",m:"that"},{w:"aaninu",m:"to the man"},{w:"ithu",m:"this"},{w:"ariyilla",m:"doesn't know"}] } }
+      }
+    },
+    "peṇ": {
+      malayalam: "പെൺ", meaning: "woman / female",
+      forms: {
+        nominative: { transliteration: "peṇ",       malayalam: "പെൺ",        meaning: "woman",          example: { malayalam: "ഒരു പെൺ ഇവിടെ വന്നു",            transliteration: "Oru peṇ ivide vannu",      translation: "A woman came here",        words: [{w:"Oru",m:"a"},{w:"peṇ",m:"woman"},{w:"ivide",m:"here"},{w:"vannu",m:"came"}] } },
+        genitive:   { transliteration: "peṇṇinte",  malayalam: "പെണ്ണിന്റെ", meaning: "woman's",        example: { malayalam: "ആ പെണ്ണിന്റെ ബാഗ് ഇവിടെ ഉണ്ട്", transliteration: "Aa peṇṇinte baag ivide undu", translation: "That woman's bag is here", words: [{w:"Aa",m:"that"},{w:"peṇṇinte",m:"woman's"},{w:"baag",m:"bag"},{w:"ivide",m:"here"},{w:"undu",m:"is"}] } },
+        dative:     { transliteration: "peṇṇinu",   malayalam: "പെണ്ണിന്",   meaning: "to the woman",   example: { malayalam: "ആ പെണ്ണിന് ഇത് തരൂ",           transliteration: "Aa peṇṇinu ithu tharoo",  translation: "Give this to that woman",  words: [{w:"Aa",m:"that"},{w:"peṇṇinu",m:"to the woman"},{w:"ithu",m:"this"},{w:"tharoo",m:"give"}] } }
+      }
+    },
+    "suhritth": {
+      malayalam: "സുഹൃത്ത്", meaning: "friend",
+      forms: {
+        nominative: { transliteration: "suhritth",     malayalam: "സുഹൃത്ത്",    meaning: "friend",          example: { malayalam: "അവൻ എന്റെ സുഹൃത്ത് ആണ്",           transliteration: "Avan ente suhritth aanu",     translation: "He is my friend",        words: [{w:"Avan",m:"he"},{w:"ente",m:"my"},{w:"suhritth",m:"friend"},{w:"aanu",m:"is"}] } },
+        genitive:   { transliteration: "suhrithinte",  malayalam: "സുഹൃത്തിന്റെ", meaning: "friend's",        example: { malayalam: "സുഹൃത്തിന്റെ വീട് ഇവിടെ ആണ്",      transliteration: "Suhrithinte veedu ivide aanu", translation: "My friend's house is here", words: [{w:"Suhrithinte",m:"friend's"},{w:"veedu",m:"house"},{w:"ivide",m:"here"},{w:"aanu",m:"is"}] } },
+        dative:     { transliteration: "suhrithinu",   malayalam: "സുഹൃത്തിന്",  meaning: "to / for friend", example: { malayalam: "സുഹൃത്തിന് ഒരു സമ്മാനം കൊടുക്കൂ", transliteration: "Suhrithinu oru sammaanam kodukkoo", translation: "Give the friend a gift", words: [{w:"Suhrithinu",m:"to the friend"},{w:"oru",m:"a"},{w:"sammaanam",m:"gift"},{w:"kodukkoo",m:"give"}] } }
+      }
+    },
+    "kuṭṭi": {
+      malayalam: "കുട്ടി", meaning: "child",
+      forms: {
+        nominative: { transliteration: "kuṭṭi",      malayalam: "കുട്ടി",      meaning: "child",           example: { malayalam: "ആ കുട്ടി ആരുടെ ആണ്?",              transliteration: "Aa kuṭṭi aaruṭe aanu?",     translation: "Whose child is that?",           words: [{w:"Aa",m:"that"},{w:"kuṭṭi",m:"child"},{w:"aaruṭe",m:"whose"},{w:"aanu",m:"is?"}] } },
+        genitive:   { transliteration: "kuṭṭiyuṭe",  malayalam: "കുട്ടിയുടെ",  meaning: "child's",         example: { malayalam: "കുട്ടിയുടെ കളിപ്പാട്ടം ഇവിടെ ഉണ്ട്", transliteration: "Kuṭṭiyuṭe kaḷippaṭṭam ivide undu", translation: "The child's toy is here", words: [{w:"Kuṭṭiyuṭe",m:"child's"},{w:"kaḷippaṭṭam",m:"toy"},{w:"ivide",m:"here"},{w:"undu",m:"is"}] } },
+        dative:     { transliteration: "kuṭṭikku",   malayalam: "കുട്ടിക്ക്",  meaning: "for the child",   example: { malayalam: "കുട്ടിക്ക് ഇത് ഇഷ്ടമാണ്",            transliteration: "Kuṭṭikku ithu ishtamaanu",  translation: "The child likes this",           words: [{w:"Kuṭṭikku",m:"to the child"},{w:"ithu",m:"this"},{w:"ishtamaanu",m:"is liked"}] } }
+      }
+    },
+
+    // ── Home ────────────────────────────────────────────
+    "veedu": {
+      malayalam: "വീട്", meaning: "house",
+      forms: {
+        nominative: { transliteration: "veedu",    malayalam: "വീട്",      meaning: "house",         example: { malayalam: "ഇത് നല്ല വീട് ആണ്",            transliteration: "Ithu nalla veedu aanu",  translation: "This is a nice house",    words: [{w:"Ithu",m:"this"},{w:"nalla",m:"nice"},{w:"veedu",m:"house"},{w:"aanu",m:"is"}] } },
+        genitive:   { transliteration: "veedinte",  malayalam: "വീടിന്റെ",  meaning: "house's",       example: { malayalam: "വീടിന്റെ താക്കോൽ എവിടെ?",    transliteration: "Veedinte thaakkol evide?", translation: "Where is the house key?", words: [{w:"Veedinte",m:"house's"},{w:"thaakkol",m:"key"},{w:"evide",m:"where?"}] } },
+        locative:   { transliteration: "veedil",    malayalam: "വീടിൽ",     meaning: "at home / in the house", example: { malayalam: "ഞാൻ വീടിൽ ഉണ്ട്",       transliteration: "Njan veedil undu",       translation: "I am at home",            words: [{w:"Njan",m:"I"},{w:"veedil",m:"at home"},{w:"undu",m:"am"}] } }
+      }
+    },
+    "muri": {
+      malayalam: "മുറി", meaning: "room",
+      forms: {
+        nominative: { transliteration: "muri",       malayalam: "മുറി",       meaning: "room",         example: { malayalam: "ഈ മുറി വലുതാണ്",              transliteration: "Ee muri valuthaanu",       translation: "This room is big",         words: [{w:"Ee",m:"this"},{w:"muri",m:"room"},{w:"valuthaanu",m:"is big"}] } },
+        genitive:   { transliteration: "muriyuṭe",   malayalam: "മുറിയുടെ",   meaning: "room's",       example: { malayalam: "മുറിയുടെ വാതിൽ അടഞ്ഞു",     transliteration: "Muriyuṭe vaathil aṭanju",  translation: "The room's door is closed", words: [{w:"Muriyuṭe",m:"room's"},{w:"vaathil",m:"door"},{w:"aṭanju",m:"closed"}] } },
+        locative:   { transliteration: "muriyil",    malayalam: "മുറിയിൽ",    meaning: "in the room",  example: { malayalam: "ഞങ്ങൾ മുറിയിൽ ഉണ്ട്",        transliteration: "Njangaḷ muriyil undu",     translation: "We are in the room",       words: [{w:"Njangaḷ",m:"we"},{w:"muriyil",m:"in the room"},{w:"undu",m:"are"}] } }
+      }
+    },
+    "vaathil": {
+      malayalam: "വാതിൽ", meaning: "door",
+      forms: {
+        nominative: { transliteration: "vaathil",     malayalam: "വാതിൽ",      meaning: "door",          example: { malayalam: "വാതിൽ തുറക്കൂ",                 transliteration: "Vaathil thurakkoo",         translation: "Open the door",          words: [{w:"Vaathil",m:"door"},{w:"thurakkoo",m:"open (it)"}] } },
+        genitive:   { transliteration: "vaathilinte",  malayalam: "വാതിലിന്റെ", meaning: "door's",        example: { malayalam: "വാതിലിന്റെ ലോക്ക് പൊട്ടി",     transliteration: "Vaathilinte lock poṭṭi",    translation: "The door lock is broken", words: [{w:"Vaathilinte",m:"door's"},{w:"lock",m:"lock"},{w:"poṭṭi",m:"broke"}] } },
+        locative:   { transliteration: "vaathilil",    malayalam: "വാതിലിൽ",    meaning: "at the door",   example: { malayalam: "ആരോ വാതിലിൽ ഉണ്ട്",          transliteration: "Aarō vaathilil undu",       translation: "Someone is at the door",  words: [{w:"Aarō",m:"someone"},{w:"vaathilil",m:"at the door"},{w:"undu",m:"is"}] } }
+      }
+    },
+    "janel": {
+      malayalam: "ജനൽ", meaning: "window",
+      forms: {
+        nominative: { transliteration: "janel",     malayalam: "ജനൽ",       meaning: "window",          example: { malayalam: "ജനൽ അടക്കൂ",                  transliteration: "Janel aṭakkoo",          translation: "Close the window",           words: [{w:"Janel",m:"window"},{w:"aṭakkoo",m:"close (it)"}] } },
+        genitive:   { transliteration: "janelinte",  malayalam: "ജനലിന്റെ",  meaning: "window's",        example: { malayalam: "ജനലിന്റെ കണ്ണാടി ഉടഞ്ഞു",   transliteration: "Janelinte kannaadi udanju", translation: "The window glass broke",     words: [{w:"Janelinte",m:"window's"},{w:"kannaadi",m:"glass"},{w:"udanju",m:"broke"}] } },
+        locative:   { transliteration: "janelil",    malayalam: "ജനലിൽ",     meaning: "at the window",   example: { malayalam: "ഞാൻ ജനലിൽ നിന്ന് നോക്കി",    transliteration: "Njan janelil ninnu nokki", translation: "I looked through the window", words: [{w:"Njan",m:"I"},{w:"janelil",m:"at the window"},{w:"ninnu",m:"from"},{w:"nokki",m:"looked"}] } }
+      }
+    },
+    "kidakka": {
+      malayalam: "കിടക്ക", meaning: "bed",
+      forms: {
+        nominative: { transliteration: "kidakka",      malayalam: "കിടക്ക",      meaning: "bed",          example: { malayalam: "കിടക്ക ഇവിടെ ഇടൂ",               transliteration: "Kidakka ivide iṭoo",       translation: "Put the bed here",          words: [{w:"Kidakka",m:"bed"},{w:"ivide",m:"here"},{w:"iṭoo",m:"put (it)"}] } },
+        genitive:   { transliteration: "kidakkayuṭe",  malayalam: "കിടക്കയുടെ", meaning: "bed's",        example: { malayalam: "കിടക്കയുടെ വിരി ഇളക്കൂ",        transliteration: "Kidakkayuṭe viri iḷakkoo", translation: "Straighten the bed sheet",   words: [{w:"Kidakkayuṭe",m:"bed's"},{w:"viri",m:"sheet"},{w:"iḷakkoo",m:"straighten"}] } },
+        locative:   { transliteration: "kidakkayil",   malayalam: "കിടക്കയിൽ",  meaning: "in / on the bed", example: { malayalam: "ഞാൻ കിടക്കയിൽ ഉണ്ട്",         transliteration: "Njan kidakkayil undu",     translation: "I am in bed",               words: [{w:"Njan",m:"I"},{w:"kidakkayil",m:"in bed"},{w:"undu",m:"am"}] } }
+      }
+    },
+
+    // ── Objects ─────────────────────────────────────────
+    "phone": {
+      malayalam: "ഫോൺ", meaning: "phone",
+      forms: {
+        nominative: { transliteration: "phone",     malayalam: "ഫോൺ",       meaning: "phone",           example: { malayalam: "എന്റെ ഫോൺ എവിടെ?",            transliteration: "Ente phone evide?",       translation: "Where is my phone?",     words: [{w:"Ente",m:"my"},{w:"phone",m:"phone"},{w:"evide",m:"where?"}] } },
+        genitive:   { transliteration: "phoninte",   malayalam: "ഫോണിന്റെ",  meaning: "phone's",         example: { malayalam: "ഫോണിന്റെ ബാറ്ററി തീർന്നു",   transliteration: "Phoninte battery theernnu", translation: "The phone battery is dead", words: [{w:"Phoninte",m:"phone's"},{w:"battery",m:"battery"},{w:"theernnu",m:"is dead / finished"}] } },
+        locative:   { transliteration: "phonil",     malayalam: "ഫോണിൽ",     meaning: "on the phone",    example: { malayalam: "ഞാൻ ഫോണിൽ ആണ്",             transliteration: "Njan phonil aanu",         translation: "I am on the phone",      words: [{w:"Njan",m:"I"},{w:"phonil",m:"on the phone"},{w:"aanu",m:"am"}] } }
+      }
+    },
+    "panam": {
+      malayalam: "പണം", meaning: "money",
+      forms: {
+        nominative: { transliteration: "panam",        malayalam: "പണം",          meaning: "money",          example: { malayalam: "പണം ഉണ്ടോ?",                        transliteration: "Panam undō?",                translation: "Do you have money?",          words: [{w:"Panam",m:"money"},{w:"undō",m:"is there? / do you have?"}] } },
+        genitive:   { transliteration: "panatthinte",  malayalam: "പണത്തിന്റെ",  meaning: "of the money",   example: { malayalam: "ഇത് പണത്തിന്റെ കാര്യം ആണ്",      transliteration: "Ithu panatthinte kaaryam aanu", translation: "This is a matter of money", words: [{w:"Ithu",m:"this"},{w:"panatthinte",m:"of the money"},{w:"kaaryam",m:"matter"},{w:"aanu",m:"is"}] } },
+        dative:     { transliteration: "panatthinu",   malayalam: "പണത്തിന്",    meaning: "for money",      example: { malayalam: "പണത്തിന് വേണ്ടി ജോലി ചെയ്യുന്നു", transliteration: "Panatthinu vēndi joli cheyyunnu", translation: "Working for money", words: [{w:"Panatthinu",m:"for money"},{w:"vēndi",m:"for the sake of"},{w:"joli",m:"work"},{w:"cheyyunnu",m:"doing"}] } }
+      }
+    },
+    "baag": {
+      malayalam: "ബാഗ്", meaning: "bag",
+      forms: {
+        nominative: { transliteration: "baag",     malayalam: "ബാഗ്",      meaning: "bag",            example: { malayalam: "ബാഗ് ഇവിടെ വയ്ക്കൂ",           transliteration: "Baag ivide vaykoo",       translation: "Put the bag here",       words: [{w:"Baag",m:"bag"},{w:"ivide",m:"here"},{w:"vaykoo",m:"put (it)"}] } },
+        genitive:   { transliteration: "baaginte",  malayalam: "ബാഗിന്റെ",  meaning: "bag's",          example: { malayalam: "ഇത് ബാഗിന്റെ ഉള്ളിൽ ഉണ്ട്",   transliteration: "Ithu baaginte ullil undu", translation: "This is inside the bag", words: [{w:"Ithu",m:"this"},{w:"baaginte",m:"bag's"},{w:"ullil",m:"inside"},{w:"undu",m:"is"}] } },
+        locative:   { transliteration: "baagil",    malayalam: "ബാഗിൽ",     meaning: "in the bag",     example: { malayalam: "ഫോൺ ബാഗിൽ ഉണ്ട്",             transliteration: "Phone baagil undu",       translation: "The phone is in the bag", words: [{w:"Phone",m:"phone"},{w:"baagil",m:"in the bag"},{w:"undu",m:"is"}] } }
+      }
+    },
+    "thaakkol": {
+      malayalam: "താക്കോൽ", meaning: "key",
+      forms: {
+        nominative: { transliteration: "thaakkol",     malayalam: "താക്കോൽ",      meaning: "key",        example: { malayalam: "താക്കോൽ ഇല്ല",                       transliteration: "Thaakkol illa",               translation: "There is no key",           words: [{w:"Thaakkol",m:"key"},{w:"illa",m:"there isn't / no"}] } },
+        genitive:   { transliteration: "thaakkolinte",  malayalam: "താക്കോലിന്റെ", meaning: "key's",      example: { malayalam: "ആ താക്കോലിന്റെ ഉടമ ആരാണ്?",      transliteration: "Aa thaakkolinte uḍama aaraanu?", translation: "Who owns that key?",     words: [{w:"Aa",m:"that"},{w:"thaakkolinte",m:"key's"},{w:"uḍama",m:"owner"},{w:"aaraanu",m:"who is?"}] } },
+        locative:   { transliteration: "thaakkolil",    malayalam: "താക്കോലിൽ",    meaning: "on the key", example: { malayalam: "താക്കോലിൽ ഒരു നമ്പർ ഉണ്ട്",        transliteration: "Thaakkolil oru nambar undu",  translation: "There is a number on the key", words: [{w:"Thaakkolil",m:"on the key"},{w:"oru",m:"a"},{w:"nambar",m:"number"},{w:"undu",m:"is"}] } }
+      }
+    },
+    "pusthakam": {
+      malayalam: "പുസ്തകം", meaning: "book",
+      forms: {
+        nominative: { transliteration: "pusthakam",       malayalam: "പുസ്തകം",         meaning: "book",          example: { malayalam: "ഈ പുസ്തകം നല്ലതാണ്",               transliteration: "Ee pusthakam nallathaanu",        translation: "This book is good",          words: [{w:"Ee",m:"this"},{w:"pusthakam",m:"book"},{w:"nallathaanu",m:"is good"}] } },
+        genitive:   { transliteration: "pusthakatthinte", malayalam: "പുസ്തകത്തിന്റെ", meaning: "book's",         example: { malayalam: "പുസ്തകത്തിന്റെ പേര് എന്താണ്?",    transliteration: "Pusthakatthinte peru enthānu?",   translation: "What is the book's title?",  words: [{w:"Pusthakatthinte",m:"book's"},{w:"peru",m:"name / title"},{w:"enthānu",m:"what is?"}] } },
+        locative:   { transliteration: "pusthakatthil",   malayalam: "പുസ്തകത്തിൽ",    meaning: "in the book",    example: { malayalam: "ഉത്തരം പുസ്തകത്തിൽ ഉണ്ട്",         transliteration: "Uttaram pusthakatthil undu",      translation: "The answer is in the book",  words: [{w:"Uttaram",m:"answer"},{w:"pusthakatthil",m:"in the book"},{w:"undu",m:"is"}] } }
+      }
+    },
+
+    // ── Places ──────────────────────────────────────────
+    "vazhi": {
+      malayalam: "വഴി", meaning: "road / way",
+      forms: {
+        nominative: { transliteration: "vazhi",      malayalam: "വഴി",        meaning: "road / way",    example: { malayalam: "ഈ വഴി ശരിയാണോ?",               transliteration: "Ee vazhi shariyaanō?",      translation: "Is this the right way?",   words: [{w:"Ee",m:"this"},{w:"vazhi",m:"road / way"},{w:"shariyaanō",m:"is it correct?"}] } },
+        genitive:   { transliteration: "vazhiyuṭe",  malayalam: "വഴിയുടെ",   meaning: "road's",        example: { malayalam: "ഈ വഴിയുടെ അവസാനം ഏത്?",        transliteration: "Ee vazhiyuṭe avasaanam ethu?", translation: "Where does this road end?", words: [{w:"Ee",m:"this"},{w:"vazhiyuṭe",m:"road's"},{w:"avasaanam",m:"end"},{w:"ethu",m:"which / where?"}] } },
+        locative:   { transliteration: "vazhiyil",   malayalam: "വഴിയിൽ",    meaning: "on the road",   example: { malayalam: "ഇവർ വഴിയിൽ നടക്കുന്നു",          transliteration: "Ivar vazhiyil naṭakkunnu",  translation: "They are walking on the road", words: [{w:"Ivar",m:"they (hon.)"},{w:"vazhiyil",m:"on the road"},{w:"naṭakkunnu",m:"are walking"}] } }
+      }
+    },
+    "kaḍa": {
+      malayalam: "കട", meaning: "shop",
+      forms: {
+        nominative: { transliteration: "kaḍa",      malayalam: "കട",        meaning: "shop",           example: { malayalam: "കട എവിടെ ആണ്?",              transliteration: "Kaḍa evide aanu?",        translation: "Where is the shop?",     words: [{w:"Kaḍa",m:"shop"},{w:"evide",m:"where"},{w:"aanu",m:"is?"}] } },
+        genitive:   { transliteration: "kaḍayuṭe",  malayalam: "കടയുടെ",   meaning: "shop's",         example: { malayalam: "കടയുടെ ഉടമ ആരാണ്?",         transliteration: "Kaḍayuṭe uḍama aaraanu?", translation: "Who is the shop owner?", words: [{w:"Kaḍayuṭe",m:"shop's"},{w:"uḍama",m:"owner"},{w:"aaraanu",m:"who is?"}] } },
+        locative:   { transliteration: "kaḍayil",   malayalam: "കടയിൽ",    meaning: "in the shop",    example: { malayalam: "ഞാൻ കടയിൽ ഉണ്ട്",           transliteration: "Njan kaḍayil undu",       translation: "I am in the shop",       words: [{w:"Njan",m:"I"},{w:"kaḍayil",m:"in the shop"},{w:"undu",m:"am"}] } }
+      }
+    },
+    "sthalam": {
+      malayalam: "സ്ഥലം", meaning: "place",
+      forms: {
+        nominative: { transliteration: "sthalam",       malayalam: "സ്ഥലം",         meaning: "place",          example: { malayalam: "ഈ സ്ഥലം നല്ലതാണ്",               transliteration: "Ee sthalam nallathaanu",        translation: "This place is nice",          words: [{w:"Ee",m:"this"},{w:"sthalam",m:"place"},{w:"nallathaanu",m:"is nice"}] } },
+        genitive:   { transliteration: "sthalatthinte", malayalam: "സ്ഥലത്തിന്റെ", meaning: "place's / of the place", example: { malayalam: "ഈ സ്ഥലത്തിന്റെ പേര് മറന്നു", transliteration: "Ee sthalatthinte peru marannu",  translation: "I forgot the name of this place", words: [{w:"Ee",m:"this"},{w:"sthalatthinte",m:"place's"},{w:"peru",m:"name"},{w:"marannu",m:"forgot"}] } },
+        locative:   { transliteration: "sthalatthil",   malayalam: "സ്ഥലത്തിൽ",    meaning: "at the place",   example: { malayalam: "ആ സ്ഥലത്തിൽ ഞങ്ങൾ ഉണ്ട്",      transliteration: "Aa sthalatthil njangaḷ undu",   translation: "We are at that place",        words: [{w:"Aa",m:"that"},{w:"sthalatthil",m:"at the place"},{w:"njangaḷ",m:"we"},{w:"undu",m:"are"}] } }
+      }
+    },
+    "ivide": {
+      malayalam: "ഇവിടെ", meaning: "here",
+      forms: {
+        locative:    { transliteration: "ivide",        malayalam: "ഇവിടെ",       meaning: "here / at this place", example: { malayalam: "ഞാൻ ഇവിടെ ഉണ്ട്",              transliteration: "Njan ivide undu",          translation: "I am here",                  words: [{w:"Njan",m:"I"},{w:"ivide",m:"here"},{w:"undu",m:"am"}] } },
+        directional: { transliteration: "ividekku",     malayalam: "ഇവിടേക്ക്",   meaning: "to here / this way",   example: { malayalam: "ഇവിടേക്ക് വരൂ",               transliteration: "Ividekku varoo",           translation: "Come here",                  words: [{w:"Ividekku",m:"to here"},{w:"varoo",m:"come"}] } },
+        ablative:    { transliteration: "ivide ninnu",  malayalam: "ഇവിടെ നിന്ന്", meaning: "from here",            example: { malayalam: "ഇവിടെ നിന്ന് നേരെ പോകൂ",    transliteration: "Ivide ninnu nere pokoo",   translation: "Go straight from here",      words: [{w:"Ivide",m:"here"},{w:"ninnu",m:"from"},{w:"nere",m:"straight"},{w:"pokoo",m:"go"}] } }
+      }
+    },
+    "avide": {
+      malayalam: "അവിടെ", meaning: "there",
+      forms: {
+        locative:    { transliteration: "avide",        malayalam: "അവിടെ",       meaning: "there / at that place", example: { malayalam: "അവൻ അവിടെ ഉണ്ട്",             transliteration: "Avan avide undu",          translation: "He is there",                words: [{w:"Avan",m:"he"},{w:"avide",m:"there"},{w:"undu",m:"is"}] } },
+        directional: { transliteration: "avidekku",     malayalam: "അവിടേക്ക്",   meaning: "to there / that way",   example: { malayalam: "ഞാൻ അവിടേക്ക് പോകുന്നു",    transliteration: "Njan avidekku pokunnu",    translation: "I am going there",           words: [{w:"Njan",m:"I"},{w:"avidekku",m:"to there"},{w:"pokunnu",m:"am going"}] } },
+        ablative:    { transliteration: "avide ninnu",  malayalam: "അവിടെ നിന്ന്", meaning: "from there",            example: { malayalam: "അവിടെ നിന്ന് ഇവിടെ വരൂ",   transliteration: "Avide ninnu ivide varoo",  translation: "Come here from there",       words: [{w:"Avide",m:"there"},{w:"ninnu",m:"from"},{w:"ivide",m:"here"},{w:"varoo",m:"come"}] } }
+      }
+    }
+
   }
 
 };
