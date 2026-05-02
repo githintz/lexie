@@ -277,6 +277,11 @@ const LEXICON = {
         negative: { transliteration: "āvilla", malayalam: "ആവില്ല",   meaning: "won't / can't be", example: { malayalam: "ഇത് ഇനി ആവില്ല",          transliteration: "Ithu ini āvilla",      translation: "This won't happen again", words: [{w:"Ithu",m:"this"},{w:"ini",m:"again"},{w:"āvilla",m:"won't happen"}] } }
       }
     }
+  },
+
+  // ── NOUNS ─────────────────────────────────────────────
+  nouns: {
+    // words coming soon
   }
 
 };

@@ -1012,6 +1012,16 @@
   </div>
 </div>
 
+<!-- ══ COMING SOON SCREEN ══ -->
+<div id="comingSoonScreen" class="screen hidden">
+  <div class="home-card" style="text-align:center;max-width:360px">
+    <div class="home-logo" id="comingSoonEmoji">🏷️</div>
+    <h2 class="home-title" id="comingSoonTitle" style="font-size:32px">Nouns</h2>
+    <p class="home-sub" style="margin-bottom:28px">This category is coming soon.<br>Check back for new words!</p>
+    <button class="start-btn" onclick="showScreen('categoryScreen')">← Back to Categories</button>
+  </div>
+</div>
+
 <!-- ══ SESSION SCREEN ══ -->
 <div id="sessionScreen" class="screen hidden">
   <div class="session-header">
@@ -1104,7 +1114,8 @@ let isSpeaking       = false;
 const CAT_META = {
   pronouns:       { label: 'Pronouns',       emoji: '👤' },
   demonstratives: { label: 'Demonstratives', emoji: '👉' },
-  verbs:          { label: 'Verbs',          emoji: '⚡' }
+  verbs:          { label: 'Verbs',          emoji: '⚡' },
+  nouns:          { label: 'Nouns',          emoji: '🏷️' }
 };
 const CATEGORIES = Object.keys(CAT_META);
 
@@ -1377,17 +1388,27 @@ function renderCategoryGrid() {
 
   const catBtns = CATEGORIES.map(cat => {
     const { label, emoji } = CAT_META[cat];
-    const { seen, total } = categoryStats(cat);
+    const isEmpty = Object.keys(LEXICON[cat]).length === 0;
+    const { seen, total } = isEmpty ? { seen: 0, total: 0 } : categoryStats(cat);
+    const statText = isEmpty ? 'Coming soon' : `${seen}/${total} forms learned`;
     const btn = document.createElement('button');
     btn.className = 'cat-btn';
     btn.innerHTML = `
       <span class="cat-emoji">${emoji}</span>
       <span class="cat-info">
         <span class="cat-name">${label}</span>
-        <span class="cat-stat">${seen}/${total} forms learned</span>
+        <span class="cat-stat">${statText}</span>
       </span>
-      <span class="cat-arrow">→</span>`;
-    btn.onclick = () => { selectedCategory = cat; showScreen('wordSelectScreen'); };
+      <span class="cat-arrow">${isEmpty ? '🔒' : '→'}</span>`;
+    if (isEmpty) {
+      btn.onclick = () => {
+        document.getElementById('comingSoonEmoji').textContent = emoji;
+        document.getElementById('comingSoonTitle').textContent = label;
+        showScreen('comingSoonScreen');
+      };
+    } else {
+      btn.onclick = () => { selectedCategory = cat; showScreen('wordSelectScreen'); };
+    }
     return btn;
   });
 
