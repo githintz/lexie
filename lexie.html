@@ -1688,13 +1688,11 @@ document.body.appendChild(ttsAudio);
 let currentSpeakBtn = null;
 
 // iOS blocks audio.play() unless called from a user gesture.
-// Prime the audio element on first interaction so subsequent async play() calls work.
+// Track first interaction so speakWordAuto doesn't fire before the user has tapped.
 let userHasInteracted = false;
 function _onFirstInteraction() {
   if (userHasInteracted) return;
   userHasInteracted = true;
-  ttsAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
-  ttsAudio.play().catch(() => {});
 }
 document.addEventListener('touchstart', _onFirstInteraction, { once: true, passive: true });
 document.addEventListener('click',      _onFirstInteraction, { once: true });
