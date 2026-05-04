@@ -1687,6 +1687,18 @@ ttsAudio.style.display = 'none';
 document.body.appendChild(ttsAudio);
 let currentSpeakBtn = null;
 
+// iOS blocks audio.play() unless called from a user gesture.
+// Prime the audio element on first interaction so subsequent async play() calls work.
+let userHasInteracted = false;
+function _onFirstInteraction() {
+  if (userHasInteracted) return;
+  userHasInteracted = true;
+  ttsAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+  ttsAudio.play().catch(() => {});
+}
+document.addEventListener('touchstart', _onFirstInteraction, { once: true, passive: true });
+document.addEventListener('click',      _onFirstInteraction, { once: true });
+
 function setSpeaking(btn, on) {
   isSpeaking = on;
   if (currentSpeakBtn) currentSpeakBtn.classList.remove('speaking');
@@ -1694,7 +1706,7 @@ function setSpeaking(btn, on) {
   if (currentSpeakBtn) currentSpeakBtn.classList.add('speaking');
 }
 
-function speakWordAuto(text) { speakMalayalam(text, null); }
+function speakWordAuto(text) { if (userHasInteracted) speakMalayalam(text, null); }
 function speakWord(e, text)  { e.stopPropagation(); speakMalayalam(text, e.currentTarget); }
 
 async function speakMalayalam(text, btn) {
@@ -1715,18 +1727,16 @@ async function speakMalayalam(text, btn) {
 }
 
 async function googleTTSFallback(text, btn) {
+  // Set src directly — <audio> elements bypass CORS, unlike fetch().
+  // This fixes Chrome desktop where fetch() to translate.googleapis.com is blocked.
   const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=ml&client=gtx&q=${encodeURIComponent(text)}`;
   try {
-    const res     = await fetch(url);
-    if (!res.ok) throw new Error();
-    const blob    = await res.blob();
-    const blobUrl = URL.createObjectURL(blob);
     setSpeaking(btn, true);
-    ttsAudio.src      = blobUrl;
-    ttsAudio.onended  = () => { setSpeaking(btn, false); URL.revokeObjectURL(blobUrl); };
-    ttsAudio.onerror  = () => { setSpeaking(btn, false); URL.revokeObjectURL(blobUrl); webSpeechFallback(text, btn); };
+    ttsAudio.src     = url;
+    ttsAudio.onended = () => setSpeaking(btn, false);
+    ttsAudio.onerror = () => { setSpeaking(btn, false); webSpeechFallback(text, btn); };
     await ttsAudio.play();
-  } catch (_) { webSpeechFallback(text, btn); }
+  } catch (_) { setSpeaking(btn, false); webSpeechFallback(text, btn); }
 }
 
 function webSpeechFallback(text, btn) {
