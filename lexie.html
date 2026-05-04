@@ -1542,7 +1542,8 @@ function renderCard() {
     wrap.addEventListener('click', handleCardClick);
     addSwipeHandlers(wrap);
     container.appendChild(wrap);
-    setTimeout(() => speakWordAuto(card.malayalam), 600);
+    clearTimeout(_autoPlayTimer);
+    _autoPlayTimer = setTimeout(() => speakWordAuto(card.malayalam), 600);
   }, old ? 300 : 0);
 }
 
@@ -1686,6 +1687,7 @@ const ttsAudio = document.createElement('audio');
 ttsAudio.style.display = 'none';
 document.body.appendChild(ttsAudio);
 let currentSpeakBtn = null;
+let _autoPlayTimer  = null;
 
 // iOS blocks audio.play() unless called from a user gesture.
 // Track first interaction so speakWordAuto doesn't fire before the user has tapped.
@@ -1693,6 +1695,11 @@ let userHasInteracted = false;
 function _onFirstInteraction() {
   if (userHasInteracted) return;
   userHasInteracted = true;
+  // Unlock the ttsAudio element for iOS Safari.  This silent play must happen
+  // synchronously inside a gesture handler; after it, ttsAudio.play() works from
+  // any context (including setTimeout).
+  ttsAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
+  ttsAudio.play().catch(() => {});
 }
 document.addEventListener('touchstart', _onFirstInteraction, { once: true, passive: true });
 document.addEventListener('click',      _onFirstInteraction, { once: true });
@@ -1708,19 +1715,15 @@ function speakWordAuto(text) { if (userHasInteracted) speakMalayalam(text, null)
 function speakWord(e, text)  { e.stopPropagation(); speakMalayalam(text, e.currentTarget); }
 
 async function speakMalayalam(text, btn) {
+  // Cancel any in-flight ResponsiveVoice utterance before we proceed.
+  if (typeof responsiveVoice !== 'undefined') try { responsiveVoice.cancel(); } catch(e) {}
   ttsAudio.pause(); ttsAudio.src = '';
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   setSpeaking(btn, false);
-
-  if (typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()) {
-    setSpeaking(btn, true);
-    responsiveVoice.speak(text, 'Malayalam Female', {
-      rate: 0.9,
-      onend:   () => setSpeaking(btn, false),
-      onerror: () => { setSpeaking(btn, false); googleTTSFallback(text, btn); }
-    });
-    return;
-  }
+  // Skip ResponsiveVoice: with the FREE key it plays audio via its own channel AND
+  // fires onerror (wrong voice name), so googleTTSFallback fires too → double-play
+  // on Android.  On iOS/Chrome desktop the onerror path fails silently → no audio.
+  // Go straight to Google TTS which works reliably once the audio element is unlocked.
   await googleTTSFallback(text, btn);
 }
 
