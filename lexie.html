@@ -1687,8 +1687,8 @@ ttsAudio.style.display = 'none';
 document.body.appendChild(ttsAudio);
 let currentSpeakBtn = null;
 
-// iOS blocks audio.play() unless called from a user gesture.
-// Track first interaction so speakWordAuto doesn't fire before the user has tapped.
+// Auto-play is blocked on iOS when called from setTimeout (not a gesture).
+// Guard it: only fire after the user has interacted with the page at least once.
 let userHasInteracted = false;
 function _onFirstInteraction() {
   if (userHasInteracted) return;
@@ -1704,37 +1704,45 @@ function setSpeaking(btn, on) {
   if (currentSpeakBtn) currentSpeakBtn.classList.add('speaking');
 }
 
-function speakWordAuto(text) { if (userHasInteracted) speakMalayalam(text, null); }
-function speakWord(e, text)  { e.stopPropagation(); speakMalayalam(text, e.currentTarget); }
+// Auto-play: skip on iOS where play() from setTimeout is always blocked
+const _isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+function speakWordAuto(text) {
+  if (_isIOS || !userHasInteracted) return;
+  speakMalayalam(text, null);
+}
+function speakWord(e, text) { e.stopPropagation(); speakMalayalam(text, e.currentTarget); }
 
 async function speakMalayalam(text, btn) {
   ttsAudio.pause(); ttsAudio.src = '';
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   setSpeaking(btn, false);
 
+  // Google TTS first: setting <audio>.src directly bypasses the CORS restrictions
+  // that block fetch() on Chrome desktop and iOS. No Origin header is sent.
+  const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=ml&client=gtx&q=${encodeURIComponent(text)}`;
+  setSpeaking(btn, true);
+  ttsAudio.src = url;
+  try {
+    await ttsAudio.play();
+    ttsAudio.onended = () => setSpeaking(btn, false);
+    ttsAudio.onerror = () => { setSpeaking(btn, false); rvFallback(text, btn); };
+  } catch (_) {
+    setSpeaking(btn, false);
+    rvFallback(text, btn);
+  }
+}
+
+function rvFallback(text, btn) {
   if (typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()) {
     setSpeaking(btn, true);
     responsiveVoice.speak(text, 'Malayalam Female', {
       rate: 0.9,
       onend:   () => setSpeaking(btn, false),
-      onerror: () => { setSpeaking(btn, false); googleTTSFallback(text, btn); }
+      onerror: () => { setSpeaking(btn, false); webSpeechFallback(text, btn); }
     });
-    return;
+  } else {
+    webSpeechFallback(text, btn);
   }
-  await googleTTSFallback(text, btn);
-}
-
-async function googleTTSFallback(text, btn) {
-  // Set src directly — <audio> elements bypass CORS, unlike fetch().
-  // This fixes Chrome desktop where fetch() to translate.googleapis.com is blocked.
-  const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=ml&client=gtx&q=${encodeURIComponent(text)}`;
-  try {
-    setSpeaking(btn, true);
-    ttsAudio.src     = url;
-    ttsAudio.onended = () => setSpeaking(btn, false);
-    ttsAudio.onerror = () => { setSpeaking(btn, false); webSpeechFallback(text, btn); };
-    await ttsAudio.play();
-  } catch (_) { setSpeaking(btn, false); webSpeechFallback(text, btn); }
 }
 
 function webSpeechFallback(text, btn) {
