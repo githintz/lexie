@@ -1716,38 +1716,38 @@ function speakMalayalam(text, btn) {
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   setSpeaking(btn, false);
 
-  // Google TTS: <audio>.src bypasses the CORS restriction that blocks fetch().
-  const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=ml&client=gtx&q=${encodeURIComponent(text)}`;
+  // Use translate.google.com with client=tw-ob (the endpoint Google Translate's
+  // own website uses). The googleapis.com/client=gtx path returns an empty
+  // 0-duration audio body on iOS user-agents, which play() "succeeds" on without
+  // producing any sound and without firing onerror.
+  const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ml&client=tw-ob&q=${encodeURIComponent(text)}&total=1&idx=0&textlen=${text.length}`;
 
-  // Fresh Audio object each call — resetting src on a reused element can wedge
-  // iOS Safari's stricter audio state machine.
   const audio = new Audio();
   currentAudio = audio;
   setSpeaking(btn, true);
 
-  // Attach handlers BEFORE play(): on iOS, onerror can fire between the src
-  // assignment and the play() Promise settling, silently dropping the error if
-  // the handler is added after the await.
-  audio.onended = () => { if (currentAudio === audio) setSpeaking(btn, false); };
-  audio.onerror = () => {
+  let audioProgressed = false;
+
+  const onFail = () => {
     if (currentAudio !== audio) return;
     currentAudio = null;
     setSpeaking(btn, false);
     rvFallback(text, btn);
   };
+
+  // timeupdate fires during real playback. If onended arrives without it, the
+  // TTS server returned a 0-duration (empty/silent) response — treat it as failure.
+  audio.ontimeupdate = () => { audioProgressed = true; };
+  audio.onended = () => {
+    if (currentAudio !== audio) return;
+    if (!audioProgressed) { onFail(); return; }
+    setSpeaking(btn, false);
+  };
+  audio.onerror = onFail;
   audio.src = url;
 
-  // Call play() synchronously (no async/await) so iOS Safari's gesture-context
-  // check is satisfied; handle the rejection with .catch() instead.
   const p = audio.play();
-  if (p !== undefined) {
-    p.catch(() => {
-      if (currentAudio !== audio) return;
-      currentAudio = null;
-      setSpeaking(btn, false);
-      rvFallback(text, btn);
-    });
-  }
+  if (p !== undefined) p.catch(onFail);
 }
 
 function rvFallback(text, btn) {
