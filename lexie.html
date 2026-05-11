@@ -1682,9 +1682,7 @@ function advanceCard() {
 //  2. Google Translate TTS blob — good desktop fallback
 //  3. Web Speech API ml-IN — last resort
 // ════════════════════════════════════════════════════════
-const ttsAudio = document.createElement('audio');
-ttsAudio.style.display = 'none';
-document.body.appendChild(ttsAudio);
+let currentAudio = null;   // fresh Audio object per play(); see speakMalayalam
 let currentSpeakBtn = null;
 
 // Auto-play is blocked on iOS when called from setTimeout (not a gesture).
@@ -1712,33 +1710,64 @@ function speakWordAuto(text) {
 }
 function speakWord(e, text) { e.stopPropagation(); speakMalayalam(text, e.currentTarget); }
 
-async function speakMalayalam(text, btn) {
-  ttsAudio.pause(); ttsAudio.src = '';
+function speakMalayalam(text, btn) {
+  // Tear down any previous play.
+  if (currentAudio) { currentAudio.pause(); currentAudio.src = ''; currentAudio = null; }
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   setSpeaking(btn, false);
 
-  // Google TTS first: setting <audio>.src directly bypasses the CORS restrictions
-  // that block fetch() on Chrome desktop and iOS. No Origin header is sent.
+  // Google TTS: <audio>.src bypasses the CORS restriction that blocks fetch().
   const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=ml&client=gtx&q=${encodeURIComponent(text)}`;
+
+  // Fresh Audio object each call — resetting src on a reused element can wedge
+  // iOS Safari's stricter audio state machine.
+  const audio = new Audio();
+  currentAudio = audio;
   setSpeaking(btn, true);
-  ttsAudio.src = url;
-  try {
-    await ttsAudio.play();
-    ttsAudio.onended = () => setSpeaking(btn, false);
-    ttsAudio.onerror = () => { setSpeaking(btn, false); rvFallback(text, btn); };
-  } catch (_) {
+
+  // Attach handlers BEFORE play(): on iOS, onerror can fire between the src
+  // assignment and the play() Promise settling, silently dropping the error if
+  // the handler is added after the await.
+  audio.onended = () => { if (currentAudio === audio) setSpeaking(btn, false); };
+  audio.onerror = () => {
+    if (currentAudio !== audio) return;
+    currentAudio = null;
     setSpeaking(btn, false);
     rvFallback(text, btn);
+  };
+  audio.src = url;
+
+  // Call play() synchronously (no async/await) so iOS Safari's gesture-context
+  // check is satisfied; handle the rejection with .catch() instead.
+  const p = audio.play();
+  if (p !== undefined) {
+    p.catch(() => {
+      if (currentAudio !== audio) return;
+      currentAudio = null;
+      setSpeaking(btn, false);
+      rvFallback(text, btn);
+    });
   }
 }
 
 function rvFallback(text, btn) {
   if (typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()) {
     setSpeaking(btn, true);
+    let rvDone = false;
+    // Guard: on iOS, ResponsiveVoice may call speechSynthesis with no Malayalam
+    // voice, produce silence, and never fire onend or onerror. Fall through after
+    // 5 s so the speaking indicator doesn't stay lit forever.
+    const guard = setTimeout(() => {
+      if (!rvDone) { rvDone = true; setSpeaking(btn, false); webSpeechFallback(text, btn); }
+    }, 5000);
     responsiveVoice.speak(text, 'Malayalam Female', {
       rate: 0.9,
-      onend:   () => setSpeaking(btn, false),
-      onerror: () => { setSpeaking(btn, false); webSpeechFallback(text, btn); }
+      onend: () => {
+        if (!rvDone) { rvDone = true; clearTimeout(guard); setSpeaking(btn, false); }
+      },
+      onerror: () => {
+        if (!rvDone) { rvDone = true; clearTimeout(guard); setSpeaking(btn, false); webSpeechFallback(text, btn); }
+      }
     });
   } else {
     webSpeechFallback(text, btn);
