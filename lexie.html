@@ -1678,12 +1678,42 @@ function advanceCard() {
 
 // ════════════════════════════════════════════════════════
 //  TEXT TO SPEECH
-//  1. ResponsiveVoice — best cross-platform Malayalam
-//  2. Google Translate TTS blob — good desktop fallback
+//  1. Google Translate TTS via <audio>.src (no CORS)
+//  2. ResponsiveVoice Malayalam Female
 //  3. Web Speech API ml-IN — last resort
 // ════════════════════════════════════════════════════════
 let currentAudio = null;   // fresh Audio object per play(); see speakMalayalam
 let currentSpeakBtn = null;
+
+// ── Debug overlay ─────────────────────────────────────
+// Enable with ?debug=1 in the URL to see the audio pipeline on-screen.
+const _debugMode = /[?&]debug=1/.test(location.search);
+function _dbg(msg) {
+  console.log('[tts]', msg);
+  if (!_debugMode) return;
+  let el = document.getElementById('_ttsDebug');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = '_ttsDebug';
+    el.style.cssText = 'position:fixed;bottom:0;left:0;right:0;max-height:45vh;overflow-y:auto;background:rgba(0,0,0,.88);color:#0f0;font:11px/1.5 monospace;padding:6px 8px;z-index:9999;white-space:pre-wrap';
+    document.body.appendChild(el);
+  }
+  el.insertAdjacentHTML('beforeend', `<div>${new Date().toTimeString().slice(0,8)} ${msg}</div>`);
+  el.scrollTop = el.scrollHeight;
+}
+
+// ── AudioContext unlock ────────────────────────────────
+// On iOS, resuming an AudioContext inside a user-gesture handler globally
+// unlocks <audio> element playback for the rest of the session — including
+// async plays that happen after the gesture stack has unwound (e.g. inside
+// fetch().then() or ResponsiveVoice callbacks).
+const _AudioCtx = window.AudioContext || window.webkitAudioContext;
+let _audioCtx = null;
+function _unlockAudio() {
+  if (!_AudioCtx) return;
+  if (!_audioCtx) _audioCtx = new _AudioCtx();
+  if (_audioCtx.state !== 'running') _audioCtx.resume().catch(() => {});
+}
 
 // Auto-play is blocked on iOS when called from setTimeout (not a gesture).
 // Guard it: only fire after the user has interacted with the page at least once.
@@ -1716,11 +1746,16 @@ function speakMalayalam(text, btn) {
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   setSpeaking(btn, false);
 
-  // Use translate.google.com with client=tw-ob (the endpoint Google Translate's
-  // own website uses). The googleapis.com/client=gtx path returns an empty
-  // 0-duration audio body on iOS user-agents, which play() "succeeds" on without
-  // producing any sound and without firing onerror.
+  // Resume AudioContext inside the gesture handler. On iOS this globally
+  // unlocks <audio> playback so the fallback chain can play async audio.
+  _unlockAudio();
+
+  // translate.google.com/client=tw-ob is the endpoint Google Translate's
+  // own site uses. googleapis.com/client=gtx returns a 0-duration body on iOS.
   const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ml&client=tw-ob&q=${encodeURIComponent(text)}&total=1&idx=0&textlen=${text.length}`;
+
+  _dbg(`speakMalayalam: "${text.slice(0,20)}"`);
+  _dbg(`url: ${url.slice(0,80)}…`);
 
   const audio = new Audio();
   currentAudio = audio;
@@ -1728,7 +1763,8 @@ function speakMalayalam(text, btn) {
 
   let audioProgressed = false;
 
-  const onFail = () => {
+  const onFail = (reason) => {
+    _dbg(`googleTTS fail: ${reason}`);
     if (currentAudio !== audio) return;
     currentAudio = null;
     setSpeaking(btn, false);
@@ -1736,37 +1772,42 @@ function speakMalayalam(text, btn) {
   };
 
   // timeupdate fires during real playback. If onended arrives without it, the
-  // TTS server returned a 0-duration (empty/silent) response — treat it as failure.
-  audio.ontimeupdate = () => { audioProgressed = true; };
+  // server returned a 0-duration (empty/silent) response — treat as failure.
+  audio.ontimeupdate = () => { if (!audioProgressed) { audioProgressed = true; _dbg('googleTTS timeupdate — audio playing'); } };
   audio.onended = () => {
     if (currentAudio !== audio) return;
-    if (!audioProgressed) { onFail(); return; }
+    if (!audioProgressed) { onFail('onended with no timeupdate (silent response)'); return; }
+    _dbg('googleTTS onended — success');
     setSpeaking(btn, false);
   };
-  audio.onerror = onFail;
+  audio.onerror = (e) => onFail(`onerror code=${audio.error && audio.error.code}`);
   audio.src = url;
 
   const p = audio.play();
-  if (p !== undefined) p.catch(onFail);
+  _dbg(`play() called, promise=${p !== undefined ? 'yes' : 'undefined'}`);
+  if (p !== undefined) p.catch((e) => onFail(`play() rejected: ${e && e.name}`));
 }
 
 function rvFallback(text, btn) {
-  if (typeof responsiveVoice !== 'undefined' && responsiveVoice.voiceSupport()) {
+  const rvDefined = typeof responsiveVoice !== 'undefined';
+  const rvSupport = rvDefined && responsiveVoice.voiceSupport();
+  _dbg(`rvFallback: defined=${rvDefined} voiceSupport=${rvSupport}`);
+  if (rvDefined && rvSupport) {
     setSpeaking(btn, true);
     let rvDone = false;
     // Guard: on iOS, ResponsiveVoice may call speechSynthesis with no Malayalam
     // voice, produce silence, and never fire onend or onerror. Fall through after
     // 5 s so the speaking indicator doesn't stay lit forever.
     const guard = setTimeout(() => {
-      if (!rvDone) { rvDone = true; setSpeaking(btn, false); webSpeechFallback(text, btn); }
+      if (!rvDone) { rvDone = true; _dbg('rvFallback 5s guard fired — no callback received'); setSpeaking(btn, false); webSpeechFallback(text, btn); }
     }, 5000);
     responsiveVoice.speak(text, 'Malayalam Female', {
       rate: 0.9,
       onend: () => {
-        if (!rvDone) { rvDone = true; clearTimeout(guard); setSpeaking(btn, false); }
+        if (!rvDone) { rvDone = true; clearTimeout(guard); _dbg('rvFallback onend — success'); setSpeaking(btn, false); }
       },
       onerror: () => {
-        if (!rvDone) { rvDone = true; clearTimeout(guard); setSpeaking(btn, false); webSpeechFallback(text, btn); }
+        if (!rvDone) { rvDone = true; clearTimeout(guard); _dbg('rvFallback onerror'); setSpeaking(btn, false); webSpeechFallback(text, btn); }
       }
     });
   } else {
@@ -1775,14 +1816,16 @@ function rvFallback(text, btn) {
 }
 
 function webSpeechFallback(text, btn) {
-  if (!window.speechSynthesis) return;
+  if (!window.speechSynthesis) { _dbg('webSpeech unavailable'); return; }
   const voices  = window.speechSynthesis.getVoices();
   const mlVoice = voices.find(v => v.lang.toLowerCase().startsWith('ml'));
-  const utt     = new SpeechSynthesisUtterance(text);
+  _dbg(`webSpeech: totalVoices=${voices.length} mlVoice=${mlVoice ? mlVoice.name : 'none'}`);
+  const utt = new SpeechSynthesisUtterance(text);
   utt.lang = 'ml-IN'; utt.rate = 0.82;
   if (mlVoice) utt.voice = mlVoice;
   setSpeaking(btn, true);
-  utt.onend = utt.onerror = () => setSpeaking(btn, false);
+  utt.onend   = () => { _dbg('webSpeech onend'); setSpeaking(btn, false); };
+  utt.onerror = (e) => { _dbg(`webSpeech onerror: ${e && e.error}`); setSpeaking(btn, false); };
   window.speechSynthesis.speak(utt);
 }
 
