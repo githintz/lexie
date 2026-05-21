@@ -1701,6 +1701,7 @@ function _dbg(msg) {
   el.insertAdjacentHTML('beforeend', `<div>${new Date().toTimeString().slice(0,8)} ${msg}</div>`);
   el.scrollTop = el.scrollHeight;
 }
+if (_debugMode) _dbg('debug mode active — tap 🔊 to test');
 
 // ── AudioContext unlock ────────────────────────────────
 // On iOS, resuming an AudioContext inside a user-gesture handler globally
