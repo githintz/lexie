@@ -1786,52 +1786,72 @@ function speakMalayalam(text, btn) {
 }
 
 function tryProxyAudio(originalUrl, btn, text) {
-  // The direct Google TTS URL returned empty audio or was blocked for this
-  // browser's UA. Fetch it through a CORS proxy: the proxy requests the URL
-  // server-side (no browser UA), Google returns real audio, and the proxy
-  // adds CORS headers so we can read it as a blob.
-  //
-  // _unlockAudio() was called synchronously in speakMalayalam (the gesture
-  // handler), so this async play() is permitted on iOS without a new gesture.
-  const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(originalUrl)}`;
-  _dbg('trying CORS proxy');
-
+  // The direct Google TTS URL was blocked or returned empty audio. Try two
+  // alternative sources in sequence:
+  //   1. Lingva Translate audio API — CORS-enabled open frontend for Google
+  //      Translate; fetches TTS server-side and returns raw MP3 bytes.
+  //   2. allorigins.win proxy of the original Google TTS URL.
+  // _unlockAudio() was already called in speakMalayalam so async play() works.
   const audio = new Audio();
   currentAudio = audio;
 
-  let progressed = false;
-  const onProxyFail = (reason) => {
-    _dbg(`proxy fail: ${reason}`);
+  const giveUp = (reason) => {
+    _dbg(`proxy giveup: ${reason}`);
     if (currentAudio !== audio) return;
     currentAudio = null;
     setSpeaking(btn, false);
     rvFallback(text, btn);
   };
 
-  fetch(proxyUrl)
-    .then(r => {
-      if (!r.ok) throw new Error(`http ${r.status}`);
-      return r.blob();
-    })
-    .then(blob => {
-      _dbg(`proxy blob: size=${blob.size} type=${blob.type || '?'}`);
-      if (blob.size < 100) throw new Error('blob too small');
+  function playBlob(blob, nextOnFail) {
+    if (currentAudio !== audio) return;
+    const blobUrl = URL.createObjectURL(blob);
+    let progressed = false;
+    let settled = false;
+    const fail = (reason) => {
+      if (settled) return;
+      settled = true;
+      URL.revokeObjectURL(blobUrl);
+      nextOnFail(reason);
+    };
+    audio.ontimeupdate = () => { if (!progressed) { progressed = true; _dbg('blob audio playing'); } };
+    audio.onended = () => {
       if (currentAudio !== audio) return;
-      const blobUrl = URL.createObjectURL(blob);
-      audio.ontimeupdate = () => { if (!progressed) { progressed = true; _dbg('proxy playing'); } };
-      audio.onended = () => {
-        URL.revokeObjectURL(blobUrl);
+      if (!progressed) { fail('ended with no progress'); return; }
+      _dbg('blob audio success');
+      URL.revokeObjectURL(blobUrl);
+      currentAudio = null;
+      setSpeaking(btn, false);
+    };
+    audio.onerror = () => fail('audio onerror');
+    audio.src = blobUrl;
+    audio.play().catch(e => fail(`play() rejected: ${e && e.name}`));
+  }
+
+  function tryAllOrigins(reason) {
+    _dbg(`trying allorigins proxy (after: ${reason})`);
+    fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`)
+      .then(r => { if (!r.ok) throw new Error(`http ${r.status}`); return r.blob(); })
+      .then(blob => {
+        _dbg(`allorigins blob: size=${blob.size} type=${blob.type || '?'}`);
+        if (blob.size < 100) throw new Error('blob too small');
         if (currentAudio !== audio) return;
-        if (!progressed) { onProxyFail('ended with no progress'); return; }
-        _dbg('proxy success');
-        currentAudio = null;
-        setSpeaking(btn, false);
-      };
-      audio.onerror = () => { URL.revokeObjectURL(blobUrl); onProxyFail('audio onerror'); };
-      audio.src = blobUrl;
-      audio.play().catch(e => onProxyFail(`play() rejected: ${e && e.name}`));
+        playBlob(blob, giveUp);
+      })
+      .catch(e => { _dbg(`allorigins failed: ${e.message}`); giveUp(e.message); });
+  }
+
+  // ── Step 1: Lingva Translate ───────────────────────────────────────────
+  _dbg('trying Lingva TTS');
+  fetch(`https://lingva.ml/api/v1/audio/ml/${encodeURIComponent(text)}`)
+    .then(r => r.json())
+    .then(data => {
+      if (!data.audio || data.audio.length < 100) throw new Error('no audio data');
+      _dbg(`Lingva blob: size=${data.audio.length}`);
+      if (currentAudio !== audio) return;
+      playBlob(new Blob([new Uint8Array(data.audio)], {type: 'audio/mpeg'}), tryAllOrigins);
     })
-    .catch(e => onProxyFail(e && e.message || String(e)));
+    .catch(e => { _dbg(`Lingva failed: ${e.message}`); if (currentAudio === audio) tryAllOrigins(e.message); });
 }
 
 function rvFallback(text, btn) {
