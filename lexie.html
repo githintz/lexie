@@ -1742,19 +1742,15 @@ function speakWordAuto(text) {
 function speakWord(e, text) { e.stopPropagation(); speakMalayalam(text, e.currentTarget); }
 
 function speakMalayalam(text, btn) {
-  // Tear down any previous play.
   if (currentAudio) { currentAudio.pause(); currentAudio.src = ''; currentAudio = null; }
   if (window.speechSynthesis) window.speechSynthesis.cancel();
   setSpeaking(btn, false);
-
-  // Resume AudioContext inside the gesture handler. On iOS this globally
-  // unlocks <audio> playback so the fallback chain can play async audio.
   _unlockAudio();
 
-  // translate.google.com/client=tw-ob is the endpoint Google Translate's
-  // own site uses. googleapis.com/client=gtx returns a 0-duration body on iOS.
-  const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=ml&client=tw-ob&q=${encodeURIComponent(text)}&total=1&idx=0&textlen=${text.length}`;
-
+  // Revert to the gtx endpoint — the tw-ob URL returns NotSupportedError on
+  // every browser. If this URL also fails or returns silent audio, the CORS
+  // proxy step in onDirectFail will fetch it server-side and play the blob.
+  const url = `https://translate.googleapis.com/translate_tts?ie=UTF-8&tl=ml&client=gtx&q=${encodeURIComponent(text)}`;
   _dbg(`speakMalayalam: "${text.slice(0,20)}"`);
   _dbg(`url: ${url.slice(0,80)}…`);
 
@@ -1763,30 +1759,79 @@ function speakMalayalam(text, btn) {
   setSpeaking(btn, true);
 
   let audioProgressed = false;
+  let directFailed = false;
 
-  const onFail = (reason) => {
-    _dbg(`googleTTS fail: ${reason}`);
+  const onDirectFail = (reason) => {
+    _dbg(`googleTTS direct: ${reason}`);
+    if (directFailed || currentAudio !== audio) return;
+    directFailed = true;
+    currentAudio = null;
+    // Keep speaking=true — tryProxyAudio continues the attempt.
+    tryProxyAudio(url, btn, text);
+  };
+
+  audio.ontimeupdate = () => { if (!audioProgressed) { audioProgressed = true; _dbg('googleTTS playing'); } };
+  audio.onended = () => {
+    if (currentAudio !== audio) return;
+    if (!audioProgressed) { onDirectFail('ended with no timeupdate'); return; }
+    _dbg('googleTTS success');
+    setSpeaking(btn, false);
+  };
+  audio.onerror = () => onDirectFail(`onerror code=${audio.error && audio.error.code}`);
+  audio.src = url;
+
+  const p = audio.play();
+  _dbg(`play() called, promise=${p !== undefined ? 'yes' : 'undefined'}`);
+  if (p !== undefined) p.catch(e => onDirectFail(`play() rejected: ${e && e.name}`));
+}
+
+function tryProxyAudio(originalUrl, btn, text) {
+  // The direct Google TTS URL returned empty audio or was blocked for this
+  // browser's UA. Fetch it through a CORS proxy: the proxy requests the URL
+  // server-side (no browser UA), Google returns real audio, and the proxy
+  // adds CORS headers so we can read it as a blob.
+  //
+  // _unlockAudio() was called synchronously in speakMalayalam (the gesture
+  // handler), so this async play() is permitted on iOS without a new gesture.
+  const proxyUrl = `https://corsproxy.io/?url=${encodeURIComponent(originalUrl)}`;
+  _dbg('trying CORS proxy');
+
+  const audio = new Audio();
+  currentAudio = audio;
+
+  let progressed = false;
+  const onProxyFail = (reason) => {
+    _dbg(`proxy fail: ${reason}`);
     if (currentAudio !== audio) return;
     currentAudio = null;
     setSpeaking(btn, false);
     rvFallback(text, btn);
   };
 
-  // timeupdate fires during real playback. If onended arrives without it, the
-  // server returned a 0-duration (empty/silent) response — treat as failure.
-  audio.ontimeupdate = () => { if (!audioProgressed) { audioProgressed = true; _dbg('googleTTS timeupdate — audio playing'); } };
-  audio.onended = () => {
-    if (currentAudio !== audio) return;
-    if (!audioProgressed) { onFail('onended with no timeupdate (silent response)'); return; }
-    _dbg('googleTTS onended — success');
-    setSpeaking(btn, false);
-  };
-  audio.onerror = (e) => onFail(`onerror code=${audio.error && audio.error.code}`);
-  audio.src = url;
-
-  const p = audio.play();
-  _dbg(`play() called, promise=${p !== undefined ? 'yes' : 'undefined'}`);
-  if (p !== undefined) p.catch((e) => onFail(`play() rejected: ${e && e.name}`));
+  fetch(proxyUrl)
+    .then(r => {
+      if (!r.ok) throw new Error(`http ${r.status}`);
+      return r.blob();
+    })
+    .then(blob => {
+      _dbg(`proxy blob: size=${blob.size} type=${blob.type || '?'}`);
+      if (blob.size < 100) throw new Error('blob too small');
+      if (currentAudio !== audio) return;
+      const blobUrl = URL.createObjectURL(blob);
+      audio.ontimeupdate = () => { if (!progressed) { progressed = true; _dbg('proxy playing'); } };
+      audio.onended = () => {
+        URL.revokeObjectURL(blobUrl);
+        if (currentAudio !== audio) return;
+        if (!progressed) { onProxyFail('ended with no progress'); return; }
+        _dbg('proxy success');
+        currentAudio = null;
+        setSpeaking(btn, false);
+      };
+      audio.onerror = () => { URL.revokeObjectURL(blobUrl); onProxyFail('audio onerror'); };
+      audio.src = blobUrl;
+      audio.play().catch(e => onProxyFail(`play() rejected: ${e && e.name}`));
+    })
+    .catch(e => onProxyFail(e && e.message || String(e)));
 }
 
 function rvFallback(text, btn) {
