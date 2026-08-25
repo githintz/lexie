@@ -665,7 +665,7 @@
   }
 
   /* Category + Word-select screens: scroll when content is tall */
-  #categoryScreen, #wordSelectScreen {
+  #categoryScreen, #wordSelectScreen, #alphabetScreen {
     overflow-y: auto;
     justify-content: flex-start;
     -webkit-overflow-scrolling: touch;
@@ -705,6 +705,137 @@
   .cat-arrow  { color: var(--muted-dark); font-size: 16px; }
   .cat-btn.test-mode { border-color: rgba(109,40,217,0.25); background: rgba(109,40,217,0.06); }
   .cat-btn.test-mode:hover:not(:disabled) { border-color: rgba(109,40,217,0.45); background: rgba(109,40,217,0.1); }
+  .cat-btn.alphabet-mode { border-color: rgba(240,192,96,0.55); background: rgba(240,192,96,0.14); }
+  .cat-btn.alphabet-mode:hover:not(:disabled) { border-color: rgba(232,160,48,0.75); background: rgba(240,192,96,0.22); }
+
+  /* ── Alphabet screen ── */
+  .alpha-inner { width: min(560px, 100%); padding: 0 4px; }
+  .alpha-header {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 6px;
+  }
+  .alpha-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 700; color: #ffffff;
+  }
+  .alpha-count { font-size: 13px; color: var(--muted); margin: 0 0 18px 2px; }
+  .alpha-section-label {
+    display: flex; align-items: baseline; gap: 8px;
+    margin: 22px 0 10px; padding-left: 2px;
+  }
+  .alpha-section-label .asl-en {
+    font-size: 12px; font-weight: 600; letter-spacing: 1.4px;
+    text-transform: uppercase; color: var(--gold);
+  }
+  .alpha-section-label .asl-ml {
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    font-size: 13px; color: rgba(255,255,255,0.45);
+  }
+  .alpha-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(64px, 1fr));
+    gap: 8px;
+  }
+  .alpha-tile {
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; padding: 10px 4px 8px;
+    aspect-ratio: 1 / 1;
+    border-radius: 14px;
+    background: #f3f0fc;
+    border: 1.5px solid rgba(109,40,217,0.12);
+    cursor: pointer;
+    transition: transform 0.15s ease, background 0.2s ease, border-color 0.2s ease;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .alpha-tile:hover  { background: #ede9fe; border-color: rgba(109,40,217,0.35); transform: translateY(-2px); }
+  .alpha-tile:active { transform: scale(0.95); }
+  .alpha-tile .at-letter {
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    font-size: 26px; line-height: 1.1; color: var(--text-dark);
+  }
+  .alpha-tile .at-phonetic { font-size: 11px; color: var(--muted-dark); }
+  .alpha-tile.learned {
+    background: linear-gradient(160deg, #fdf6e3 0%, #f7ead0 100%);
+    border-color: rgba(232,160,48,0.55);
+  }
+  .alpha-tile.learned .at-phonetic { color: #9a6b13; }
+
+  /* ── Letter card overlay ── */
+  .alpha-overlay {
+    position: fixed; inset: 0; z-index: 60;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+    background: rgba(20,6,48,0.72);
+    -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px);
+    animation: alphaFade 0.22s ease;
+  }
+  @keyframes alphaFade { from { opacity: 0; } to { opacity: 1; } }
+  .alpha-card {
+    position: relative;
+    width: min(400px, 100%);
+    max-height: 88dvh; overflow-y: auto;
+    padding: 30px 24px 24px;
+    border-radius: var(--radius);
+    background: linear-gradient(165deg, var(--surface) 0%, var(--cream) 100%);
+    box-shadow: 0 24px 60px rgba(0,0,0,0.4);
+    text-align: center;
+    animation: alphaPop 0.28s cubic-bezier(0.34,1.56,0.64,1);
+  }
+  @keyframes alphaPop { from { opacity: 0; transform: scale(0.9) translateY(12px); } to { opacity: 1; transform: none; } }
+  .alpha-close {
+    position: absolute; top: 12px; right: 12px;
+    width: 32px; height: 32px; border: none; border-radius: 50%;
+    background: rgba(109,40,217,0.08); color: var(--muted-dark);
+    font-size: 16px; line-height: 1; cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .alpha-close:hover { background: rgba(109,40,217,0.16); }
+  .alpha-card-section {
+    font-size: 11px; font-weight: 600; letter-spacing: 1.4px;
+    text-transform: uppercase; color: rgba(109,40,217,0.5);
+    margin-bottom: 14px;
+  }
+  .alpha-card-letter {
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    font-size: 86px; line-height: 1; color: var(--text-dark);
+    margin-bottom: 6px;
+  }
+  .alpha-card-phonetic {
+    font-size: 22px; font-weight: 500; color: #6d28d9; letter-spacing: 0.5px;
+  }
+  .alpha-card-note {
+    font-size: 12px; font-style: italic; color: var(--muted-dark);
+    margin-top: 12px; line-height: 1.5;
+  }
+  .alpha-word-label {
+    font-size: 11px; font-weight: 600; letter-spacing: 1.2px;
+    text-transform: uppercase; color: rgba(109,40,217,0.45);
+    margin-bottom: 8px;
+  }
+  /* reuse .card-example / .speak-example-btn, lightened for the cream card */
+  .alpha-card .card-example { background: rgba(109,40,217,0.06); margin-top: 22px; }
+  .alpha-card .speak-example-btn { width: 34px; height: 34px; font-size: 15px; color: #7c3aed; }
+  .alpha-word-row { display: flex; align-items: center; gap: 12px; text-align: left; }
+  .alpha-word-text { flex: 1; min-width: 0; }
+  .alpha-word-malayalam {
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    font-size: 24px; color: var(--text-dark); line-height: 1.4;
+  }
+  .alpha-word-transliteration { font-size: 14px; color: #6d28d9; margin-top: 2px; }
+  .alpha-word-meaning { font-size: 13px; color: var(--muted-dark); margin-top: 2px; }
+  .alpha-nav {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-top: 22px;
+  }
+  .alpha-nav-btn {
+    padding: 9px 16px; border-radius: 10px;
+    background: rgba(109,40,217,0.08); border: none;
+    color: #4c1d95; font-size: 13px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif; cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .alpha-nav-btn:hover:not(:disabled) { background: rgba(109,40,217,0.16); }
+  .alpha-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .alpha-nav-pos { font-size: 12px; color: var(--muted-dark); }
 
   /* ── Word-select screen ── */
   .word-select-inner { width: min(480px, 100%); padding: 0 4px; }
@@ -1022,6 +1153,18 @@
   </div>
 </div>
 
+<!-- ══ ALPHABET SCREEN ══ -->
+<div id="alphabetScreen" class="screen hidden">
+  <div class="alpha-inner">
+    <div class="alpha-header">
+      <button class="back-link" onclick="showScreen('categoryScreen')">← Back</button>
+      <h2 class="alpha-title">Alphabet</h2>
+    </div>
+    <p class="alpha-count" id="alphaCount">0 / 0 letters learned</p>
+    <div id="alphabetGrid"></div>
+  </div>
+</div>
+
 <!-- ══ SESSION SCREEN ══ -->
 <div id="sessionScreen" class="screen hidden">
   <div class="session-header">
@@ -1064,6 +1207,7 @@
 </div>
 
 <script src="words.js"></script>
+<script src="alphabet.js"></script>
 
 <script>
 
@@ -1129,6 +1273,10 @@ function formatFormName(name) {
 }
 
 function formKey(category, baseKey, formName) { return `${category}|${baseKey}|${formName}`; }
+
+// Alphabet progress lives in its own `alphabet|…` namespace so it never mixes
+// with the lexicon's `category|baseKey|formName` ids (see seenIdSet below).
+function alphabetKey(section, letterKey) { return `alphabet|${section}|${letterKey}`; }
 
 // ════════════════════════════════════════════════════════
 //  LOADING UI HELPERS
@@ -1271,6 +1419,9 @@ function doLogout() {
   selectedCategory = null;
   selectedBaseKey  = null;
   isTestMode       = false;
+  alphaSection     = null;
+  alphaIndex       = 0;
+  if (alphaOverlay) closeLetterCard();
   clearSession();
   window.speechSynthesis && window.speechSynthesis.cancel();
   document.getElementById('loginUser').value   = '';
@@ -1307,7 +1458,15 @@ function shuffle(arr) {
 
 // Seen-ID set helper
 function seenIdSet() {
-  return new Set(Object.keys(userProgress).filter(k => userProgress[k]?.seen));
+  // Lexicon ids only — alphabet progress is counted separately by
+  // alphabetSeenCount(), or it would push "Forms seen" past TOTAL_FORMS.
+  return new Set(Object.keys(userProgress)
+    .filter(k => userProgress[k]?.seen && !k.startsWith('alphabet|')));
+}
+
+function alphabetSeenCount() {
+  return Object.keys(userProgress)
+    .filter(k => k.startsWith('alphabet|') && userProgress[k]?.seen).length;
 }
 
 // Build a flat card from a (category, baseKey, formName) triple
@@ -1424,7 +1583,21 @@ function renderCategoryGrid() {
     <span class="cat-arrow">→</span>`;
   testBtn.onclick = () => { if (totalSeen > 0) startTestMode(); };
 
-  grid.replaceChildren(...catBtns, testBtn);
+  // Alphabet mode — a special tile like Test Mode, deliberately not a CAT_META
+  // entry (a category key with no LEXICON key throws when TOTAL_FORMS is built)
+  const lettersSeen = alphabetSeenCount();
+  const alphaBtn = document.createElement('button');
+  alphaBtn.className = 'cat-btn alphabet-mode';
+  alphaBtn.innerHTML = `
+    <span class="cat-emoji">🔠</span>
+    <span class="cat-info">
+      <span class="cat-name">Alphabet</span>
+      <span class="cat-stat">${lettersSeen}/${TOTAL_LETTERS} letters learned</span>
+    </span>
+    <span class="cat-arrow">→</span>`;
+  alphaBtn.onclick = () => showScreen('alphabetScreen');
+
+  grid.replaceChildren(alphaBtn, ...catBtns, testBtn);
   updateOverallStats();
 }
 
@@ -1481,6 +1654,196 @@ function startTestMode() {
   showScreen('sessionScreen');
   renderCard();
 }
+
+// ════════════════════════════════════════════════════════
+//  ALPHABET MODE
+//  Grid of every letter → tap opens a flashcard overlay.
+//  All audio goes through the existing speakMalayalam cascade.
+// ════════════════════════════════════════════════════════
+let alphaSection = null;   // 'vowels' | 'consonants' | 'chillus'
+let alphaIndex   = 0;      // index into ALPHABET[alphaSection].letters
+let alphaOverlay = null;   // the open overlay element, or null
+
+function updateAlphaCount() {
+  const el = document.getElementById('alphaCount');
+  if (el) el.textContent = `${alphabetSeenCount()} / ${TOTAL_LETTERS} letters learned`;
+}
+
+function renderAlphabetGrid() {
+  const host = document.getElementById('alphabetGrid');
+  const seen = new Set(Object.keys(userProgress).filter(k => userProgress[k]?.seen));
+  const nodes = [];
+
+  for (const sectionKey of ALPHABET_SECTIONS) {
+    const section = ALPHABET[sectionKey];
+
+    const label = document.createElement('div');
+    label.className = 'alpha-section-label';
+    label.innerHTML = `
+      <span class="asl-en">${section.emoji} ${section.label}</span>
+      <span class="asl-ml">${section.malayalam}</span>`;
+    nodes.push(label);
+
+    const grid = document.createElement('div');
+    grid.className = 'alpha-grid';
+    section.letters.forEach((letter, i) => {
+      const tile = document.createElement('button');
+      tile.className = 'alpha-tile' + (seen.has(alphabetKey(sectionKey, letter.key)) ? ' learned' : '');
+      tile.dataset.letterId = alphabetKey(sectionKey, letter.key);
+      tile.innerHTML = `
+        <span class="at-letter">${letter.letter}</span>
+        <span class="at-phonetic">${letter.phonetic}</span>`;
+      tile.onclick = () => openLetterCard(sectionKey, i);
+      grid.appendChild(tile);
+    });
+    nodes.push(grid);
+  }
+
+  host.replaceChildren(...nodes);
+  updateAlphaCount();
+}
+
+// Mark a letter as learned and reflect it in the grid without a full re-render
+function markLetterSeen(id) {
+  if (userProgress[id]?.seen) return;
+  markWordsSeen([id]);                       // fire-and-forget async upsert
+  const tile = document.querySelector(`.alpha-tile[data-letter-id="${id}"]`);
+  if (tile) tile.classList.add('learned');
+  updateAlphaCount();
+}
+
+function currentLetter() {
+  return ALPHABET[alphaSection].letters[alphaIndex];
+}
+
+// Called from a tap, so speakMalayalam runs inside the gesture stack — which is
+// what keeps playback (and the async proxy fallbacks) legal on iOS.
+function openLetterCard(sectionKey, index) {
+  alphaSection = sectionKey;
+  alphaIndex   = index;
+
+  if (!alphaOverlay) {
+    alphaOverlay = document.createElement('div');
+    alphaOverlay.className = 'alpha-overlay';
+    alphaOverlay.addEventListener('click', e => {
+      if (e.target === alphaOverlay) closeLetterCard();
+    });
+    addLetterSwipeHandlers(alphaOverlay);
+    document.body.appendChild(alphaOverlay);
+  }
+
+  renderLetterCard(true);
+}
+
+function showLetter(index) {
+  const letters = ALPHABET[alphaSection].letters;
+  if (index < 0 || index >= letters.length) return;
+  alphaIndex = index;
+  renderLetterCard(true);
+}
+
+function renderLetterCard(speak) {
+  const section = ALPHABET[alphaSection];
+  const letters = section.letters;
+  const letter  = letters[alphaIndex];
+
+  alphaOverlay.innerHTML = `
+    <div class="alpha-card">
+      <button class="alpha-close" aria-label="Close">✕</button>
+      <div class="alpha-card-section">${section.label} · ${alphaIndex + 1} of ${letters.length}</div>
+      <div class="alpha-card-letter">${letter.letter}</div>
+      <div class="alpha-card-phonetic">${letter.phonetic}</div>
+      <div style="display:flex;justify-content:center;margin-top:16px">
+        <button class="speak-btn" aria-label="Hear the letter">🔊</button>
+      </div>
+      ${letter.note ? `<div class="alpha-card-note">${letter.note}</div>` : ''}
+      <div class="card-example">
+        <div class="card-example-label">Word</div>
+        <div class="card-example-row">
+          <div class="card-example-text">
+            <div class="alpha-word-malayalam">${letter.word.malayalam}</div>
+            <div class="alpha-word-transliteration">${letter.word.transliteration}</div>
+            <div class="alpha-word-meaning">${letter.word.meaning}</div>
+          </div>
+          <button class="speak-example-btn" aria-label="Hear the word">🔊</button>
+        </div>
+      </div>
+      <div class="alpha-nav">
+        <button class="alpha-nav-btn" data-nav="prev" ${alphaIndex === 0 ? 'disabled' : ''}>← Prev</button>
+        <span class="alpha-nav-pos">${section.malayalam}</span>
+        <button class="alpha-nav-btn" data-nav="next" ${alphaIndex === letters.length - 1 ? 'disabled' : ''}>Next →</button>
+      </div>
+    </div>`;
+
+  const letterBtn = alphaOverlay.querySelector('.speak-btn');
+  const wordBtn   = alphaOverlay.querySelector('.speak-example-btn');
+
+  letterBtn.onclick = e => { e.stopPropagation(); speakMalayalam(letter.speech || letter.letter, e.currentTarget); };
+  wordBtn.onclick   = e => { e.stopPropagation(); speakMalayalam(letter.word.malayalam, e.currentTarget); };
+  alphaOverlay.querySelector('.alpha-close').onclick = e => { e.stopPropagation(); closeLetterCard(); };
+  alphaOverlay.querySelector('[data-nav="prev"]').onclick = e => { e.stopPropagation(); showLetter(alphaIndex - 1); };
+  alphaOverlay.querySelector('[data-nav="next"]').onclick = e => { e.stopPropagation(); showLetter(alphaIndex + 1); };
+
+  markLetterSeen(alphabetKey(alphaSection, letter.key));
+
+  // Synchronous — still inside the tap that opened or advanced the card.
+  if (speak) speakMalayalam(letter.speech || letter.letter, letterBtn);
+}
+
+function closeLetterCard() {
+  if (currentAudio) { currentAudio.pause(); currentAudio.src = ''; currentAudio = null; }
+  if (window.speechSynthesis) window.speechSynthesis.cancel();
+  setSpeaking(null, false);
+  if (alphaOverlay) { alphaOverlay.remove(); alphaOverlay = null; }
+}
+
+// Swipe between letters — same axis lock and 72px threshold as the card deck,
+// but it steps through the section instead of advancing a deck.
+function addLetterSwipeHandlers(el) {
+  let startX = 0, startY = 0, dragging = false, horizontal = null, didMove = false;
+
+  el.addEventListener('touchstart', e => {
+    if (e.target.closest('.speak-btn') || e.target.closest('.speak-example-btn') || e.target.closest('.alpha-nav-btn') || e.target.closest('.alpha-close')) return;
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    dragging = true; horizontal = null; didMove = false;
+  }, { passive: true });
+
+  el.addEventListener('touchmove', e => {
+    if (!dragging) return;
+    const dx = e.touches[0].clientX - startX;
+    const dy = e.touches[0].clientY - startY;
+    if (horizontal === null) {
+      if (Math.abs(dx) > Math.abs(dy) + 5)      { horizontal = true; }
+      else if (Math.abs(dy) > Math.abs(dx) + 5) { horizontal = false; dragging = false; return; }
+      else return;
+    }
+    if (!horizontal) return;
+    e.preventDefault();
+    didMove = true;
+    const card = el.querySelector('.alpha-card');
+    if (card) { card.style.transition = 'none'; card.style.transform = `translateX(${dx * 0.35}px)`; }
+  }, { passive: false });
+
+  const onEnd = e => {
+    if (!dragging) return;
+    dragging = false;
+    const card = el.querySelector('.alpha-card');
+    if (card) { card.style.transition = 'transform 0.3s cubic-bezier(0.34,1.56,0.64,1)'; card.style.transform = ''; }
+    if (!didMove || !horizontal) return;
+    const dx = (e.changedTouches ? e.changedTouches[0] : e).clientX - startX;
+    if (Math.abs(dx) > 72) showLetter(alphaIndex + (dx > 0 ? -1 : 1));
+  };
+  el.addEventListener('touchend',    onEnd, { passive: true });
+  el.addEventListener('touchcancel', onEnd, { passive: true });
+}
+
+document.addEventListener('keydown', e => {
+  if (!alphaOverlay) return;
+  if (e.key === 'Escape')     { closeLetterCard(); }
+  if (e.key === 'ArrowLeft')  { showLetter(alphaIndex - 1); }
+  if (e.key === 'ArrowRight') { showLetter(alphaIndex + 1); }
+});
 
 // ════════════════════════════════════════════════════════
 //  SESSION
@@ -1938,10 +2301,12 @@ function launchConfetti() {
 //  NAVIGATION
 // ════════════════════════════════════════════════════════
 function showScreen(id) {
+  if (alphaOverlay) closeLetterCard();
   document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
   document.getElementById(id).classList.remove('hidden');
   if (id === 'categoryScreen')   renderCategoryGrid();
   if (id === 'wordSelectScreen') renderWordList();
+  if (id === 'alphabetScreen')   renderAlphabetGrid();
 }
 
 // Session/done back button — goes to the most useful parent screen
