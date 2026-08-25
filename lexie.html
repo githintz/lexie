@@ -665,7 +665,7 @@
   }
 
   /* Category + Word-select screens: scroll when content is tall */
-  #categoryScreen, #wordSelectScreen, #alphabetScreen {
+  #categoryScreen, #wordSelectScreen, #alphabetScreen, #phrasesScreen, #addPhraseScreen {
     overflow-y: auto;
     justify-content: flex-start;
     -webkit-overflow-scrolling: touch;
@@ -707,6 +707,11 @@
   .cat-btn.test-mode:hover:not(:disabled) { border-color: rgba(109,40,217,0.45); background: rgba(109,40,217,0.1); }
   .cat-btn.alphabet-mode { border-color: rgba(240,192,96,0.55); background: rgba(240,192,96,0.14); }
   .cat-btn.alphabet-mode:hover:not(:disabled) { border-color: rgba(232,160,48,0.75); background: rgba(240,192,96,0.22); }
+  .cat-btn.phrase-mode { border-color: rgba(52,211,153,0.5); background: rgba(52,211,153,0.12); }
+  .cat-btn.phrase-mode:hover:not(:disabled) { border-color: rgba(16,185,129,0.7); background: rgba(52,211,153,0.2); }
+  /* Pulses only while today's phrase is still unread */
+  .cat-btn.phrase-mode.fresh { border-color: rgba(240,192,96,0.75); background: rgba(240,192,96,0.2); }
+  .cat-btn.phrase-mode.fresh .cat-stat { color: #9a6b13; font-weight: 600; }
 
   /* ── Alphabet screen ── */
   .alpha-inner { width: min(560px, 100%); padding: 0 4px; }
@@ -836,6 +841,85 @@
   .alpha-nav-btn:hover:not(:disabled) { background: rgba(109,40,217,0.16); }
   .alpha-nav-btn:disabled { opacity: 0.3; cursor: not-allowed; }
   .alpha-nav-pos { font-size: 12px; color: var(--muted-dark); }
+
+  /* ── Phrases screen ── */
+  .phrase-inner { width: min(560px, 100%); padding: 0 4px; }
+  .phrase-header { display: flex; align-items: center; gap: 14px; margin-bottom: 6px; }
+  .phrase-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 700; color: #ffffff;
+  }
+  .phrase-count { font-size: 13px; color: var(--muted); margin: 0 0 18px 2px; }
+  .phrase-section-label {
+    font-size: 12px; font-weight: 600; letter-spacing: 1.4px;
+    text-transform: uppercase; color: var(--gold);
+    margin: 26px 0 10px; padding-left: 2px;
+  }
+  .phrase-list { display: flex; flex-direction: column; gap: 10px; }
+  /* Scoped, not a global .hidden — that would kill the .screen.hidden fade */
+  #phraseHistoryLabel.hidden, #phraseAdminBar.hidden { display: none; }
+
+  /* One card body, two dresses: `featured` for today, plain for history */
+  .phrase-card {
+    width: 100%; text-align: left;
+    padding: 18px 18px 16px;
+    border-radius: 18px;
+    background: rgba(255,255,255,0.96);
+    border: 1.5px solid rgba(255,255,255,0.6);
+    color: var(--text-dark);
+    font-family: 'DM Sans', sans-serif;
+  }
+  .phrase-card.featured {
+    background: linear-gradient(165deg, var(--surface) 0%, var(--cream) 100%);
+    border-color: rgba(232,160,48,0.6);
+    box-shadow: 0 18px 44px rgba(30,5,80,0.4);
+    animation: floatIn 0.6s cubic-bezier(0.22,1,0.36,1) both;
+  }
+  .phrase-date {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.16em;
+    text-transform: uppercase; color: rgba(109,40,217,0.5);
+    margin-bottom: 10px;
+  }
+  .phrase-card.featured .phrase-date { color: #9a6b13; }
+  .phrase-row { display: flex; align-items: flex-start; gap: 12px; }
+  .phrase-text { flex: 1; min-width: 0; }
+  .phrase-malayalam {
+    font-family: 'Noto Sans Malayalam', sans-serif;
+    line-height: 1.45; color: var(--text-dark);
+    font-size: 20px;
+  }
+  .phrase-card.featured .phrase-malayalam { font-size: 27px; }
+  .phrase-translit {
+    font-size: 14px; color: #6d28d9; font-style: italic;
+    margin-top: 6px; line-height: 1.6;
+  }
+  .phrase-translation { font-size: 14px; color: var(--muted-dark); margin-top: 5px; }
+  .phrase-note {
+    margin-top: 12px; padding: 10px 12px;
+    border-radius: 10px; background: rgba(109,40,217,0.07);
+    font-size: 12.5px; font-style: italic; color: #4c1d95; line-height: 1.55;
+  }
+  .phrase-card .speak-example-btn { width: 36px; height: 36px; font-size: 16px; color: #7c3aed; }
+
+  /* History rows collapse to script + English until tapped */
+  .phrase-item { cursor: pointer; transition: all 0.2s ease; }
+  .phrase-item:hover { border-color: rgba(109,40,217,0.4); background: #ffffff; }
+  .phrase-item.seen { background: #f3f0fc; }
+  .phrase-item .phrase-hidden { display: none; }
+  .phrase-item.open .phrase-hidden { display: block; }
+  .phrase-empty {
+    padding: 26px 20px; border-radius: 18px; text-align: center;
+    background: rgba(255,255,255,0.08);
+    border: 1px dashed rgba(255,255,255,0.25);
+    color: var(--muted); font-size: 14px; line-height: 1.6;
+  }
+
+  /* ── Add-phrase form (reuses .login-card / .login-field) ── */
+  .phrase-form-hint {
+    font-size: 11.5px; color: var(--muted-dark);
+    margin: -6px 0 10px 2px; line-height: 1.5;
+  }
+  textarea.login-field { min-height: 84px; resize: vertical; line-height: 1.5; }
 
   /* ── Word-select screen ── */
   .word-select-inner { width: min(480px, 100%); padding: 0 4px; }
@@ -1165,6 +1249,61 @@
   </div>
 </div>
 
+<!-- ══ PHRASES SCREEN ══ -->
+<div id="phrasesScreen" class="screen hidden">
+  <div class="phrase-inner">
+    <div class="phrase-header">
+      <button class="back-link" onclick="showScreen('categoryScreen')">← Back</button>
+      <h2 class="phrase-title">Phrases</h2>
+    </div>
+    <p class="phrase-count" id="phraseCount">0 phrases so far</p>
+
+    <div id="phraseToday"></div>
+
+    <div id="phraseHistoryLabel" class="phrase-section-label hidden">Earlier phrases</div>
+    <div class="phrase-list" id="phraseList"></div>
+
+    <div id="phraseAdminBar" style="margin-top:22px" class="hidden">
+      <button class="start-btn" onclick="showScreen('addPhraseScreen')">➕ Add a phrase</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ADD PHRASE SCREEN (admins only) ══ -->
+<div id="addPhraseScreen" class="screen hidden">
+  <div class="login-card" style="overflow-y:auto;max-height:96dvh">
+    <div class="home-logo">💬</div>
+    <h1 class="home-title" style="font-size:32px">New Phrase</h1>
+    <p class="home-sub">Today's lesson <span>🌸</span></p>
+
+    <p class="section-label" style="margin-bottom:10px">Malayalam</p>
+    <input class="login-field" id="apMalayalam" type="text" placeholder="സുഖമാണോ" autocapitalize="none">
+
+    <p class="section-label" style="margin-bottom:10px">Transliteration</p>
+    <input class="login-field" id="apTranslit" type="text" placeholder="Sukhamano" autocapitalize="none">
+
+    <p class="section-label" style="margin-bottom:10px">English</p>
+    <input class="login-field" id="apTranslation" type="text" placeholder="How are you?" autocapitalize="sentences">
+
+    <p class="section-label" style="margin-bottom:10px">Word by word <span style="text-transform:none;letter-spacing:0">(optional)</span></p>
+    <textarea class="login-field" id="apGloss" placeholder="sukham = well&#10;ano = is it?" autocapitalize="none"></textarea>
+    <p class="phrase-form-hint">One per line, <code>word = meaning</code>. These replace the transliteration on the card as tappable words, so spell the whole phrase out.</p>
+
+    <p class="section-label" style="margin-bottom:10px">Note <span style="text-transform:none;letter-spacing:0">(optional)</span></p>
+    <textarea class="login-field" id="apNote" placeholder="A grammar tip, or when to use this" autocapitalize="sentences"></textarea>
+
+    <p class="section-label" style="margin-bottom:10px">Show from</p>
+    <input class="login-field" id="apDate" type="date">
+    <p class="phrase-form-hint">Defaults to today. Pick a future date to write tomorrow's phrase now.</p>
+
+    <div class="login-error" id="addPhraseError"></div>
+
+    <button class="start-btn" id="addPhraseBtn" onclick="doAddPhrase()">Save Phrase →</button>
+    <div style="height:10px"></div>
+    <button class="btn-secondary" style="width:100%;padding:14px;border-radius:12px" onclick="showScreen('phrasesScreen')">← Cancel</button>
+  </div>
+</div>
+
 <!-- ══ SESSION SCREEN ══ -->
 <div id="sessionScreen" class="screen hidden">
   <div class="session-header">
@@ -1245,6 +1384,8 @@ function clearSession()        { try { localStorage.removeItem(SESSION_KEY); } c
 // ════════════════════════════════════════════════════════
 let currentUser      = null;   // username string
 let currentName      = null;   // display name
+let isAdmin          = false;  // may add phrases (users.is_admin)
+let phrases          = [];     // published phrases, newest first
 let userProgress     = {};     // { "category|baseKey|formName": { seen, lastSeen } }
 let selectedCategory = null;   // 'pronouns' | 'demonstratives' | 'verbs'
 let selectedBaseKey  = null;   // e.g. 'njan'
@@ -1277,6 +1418,49 @@ function formKey(category, baseKey, formName) { return `${category}|${baseKey}|$
 // Alphabet progress lives in its own `alphabet|…` namespace so it never mixes
 // with the lexicon's `category|baseKey|formName` ids (see seenIdSet below).
 function alphabetKey(section, letterKey) { return `alphabet|${section}|${letterKey}`; }
+
+// Phrases get their own namespace too, keyed by the Supabase row id.
+function phraseKey(id) { return `phrase|${id}`; }
+
+// Local calendar date as YYYY-MM-DD. Deliberately NOT toISOString(), which is
+// UTC — that would hide the day's phrase all evening anywhere east of London.
+function todayISO() {
+  const d = new Date();
+  const pad = n => String(n).padStart(2, '0');
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+}
+
+// Phrase text is typed by a person and rendered through innerHTML, unlike the
+// static data files — so every phrase field goes through here first.
+function esc(str) {
+  return String(str ?? '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// "sukham = well" per line → [{ w, m }] for renderChips. Blank → null.
+function parseGloss(text) {
+  const pairs = (text || '').split('\n')
+    .map(line => line.trim())
+    .filter(Boolean)
+    .map(line => {
+      const i = line.indexOf('=');
+      if (i === -1) return null;
+      const w = line.slice(0, i).trim();
+      const m = line.slice(i + 1).trim();
+      return (w && m) ? { w, m } : null;
+    })
+    .filter(Boolean);
+  return pairs.length ? pairs : null;
+}
+
+// "2026-08-25" → "Tue, 25 Aug 2026" (parsed as local, not UTC)
+function formatPhraseDate(iso) {
+  const [y, m, d] = String(iso).split('-').map(Number);
+  if (!y || !m || !d) return iso;
+  return new Date(y, m - 1, d).toLocaleDateString(undefined,
+    { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' });
+}
 
 // ════════════════════════════════════════════════════════
 //  LOADING UI HELPERS
@@ -1331,6 +1515,34 @@ async function markWordsSeen(wordIds) {
 function loadProgress() { return userProgress; }
 
 // ════════════════════════════════════════════════════════
+//  SUPABASE — PHRASES
+//  Only rows dated today or earlier come back, so a phrase
+//  written ahead of time simply appears on its own day.
+// ════════════════════════════════════════════════════════
+async function fetchPhrases() {
+  const { data, error } = await db
+    .from('phrases')
+    .select('id, publish_on, malayalam, transliteration, translation, gloss, note')
+    .lte('publish_on', todayISO())
+    .order('publish_on', { ascending: false })
+    .order('id',         { ascending: false });
+  if (error) { console.error('fetchPhrases:', error); return; }
+  phrases = data || [];
+}
+
+async function addPhrase(row) {
+  const { error } = await db.from('phrases').insert(row);
+  if (error) console.error('addPhrase:', error);
+  return { error };
+}
+
+// Phrases sharing the newest published date — usually one, but two on a
+// generous day. Empty when nothing has been published for today yet.
+function todaysPhrases() {
+  return phrases.filter(p => p.publish_on === todayISO());
+}
+
+// ════════════════════════════════════════════════════════
 //  AUTH LOGIC
 // ════════════════════════════════════════════════════════
 async function doLogin() {
@@ -1346,7 +1558,7 @@ async function doLogin() {
 
   const { data, error } = await db
     .from('users')
-    .select('name, password_hash')
+    .select('name, password_hash, is_admin')
     .eq('username', username)
     .single();
 
@@ -1358,6 +1570,7 @@ async function doLogin() {
 
   currentUser = username;
   currentName = data.name;
+  isAdmin     = !!data.is_admin;   // read from the DB, never from localStorage
   setSession({ username, name: data.name });
   document.getElementById('loginPass').value = '';
 
@@ -1406,6 +1619,7 @@ async function doRegister() {
 
   currentUser = username;
   currentName = name;
+  isAdmin     = false;
   setSession({ username, name });
   ['regName','regUser','regPass','regPass2'].forEach(id => document.getElementById(id).value = '');
 
@@ -1415,6 +1629,8 @@ async function doRegister() {
 function doLogout() {
   currentUser      = null;
   currentName      = null;
+  isAdmin          = false;
+  phrases          = [];
   userProgress     = {};
   selectedCategory = null;
   selectedBaseKey  = null;
@@ -1432,7 +1648,7 @@ function doLogout() {
 
 async function enterApp(name) {
   showLoading('Loading your progress…');
-  await fetchProgress();
+  await Promise.all([fetchProgress(), fetchPhrases()]);
   hideLoading();
   const greetings = [
     `Hello, ${name}! Ready to learn today? 🌸`,
@@ -1458,10 +1674,18 @@ function shuffle(arr) {
 
 // Seen-ID set helper
 function seenIdSet() {
-  // Lexicon ids only — alphabet progress is counted separately by
-  // alphabetSeenCount(), or it would push "Forms seen" past TOTAL_FORMS.
+  // Lexicon ids only — alphabet and phrase progress are counted separately by
+  // alphabetSeenCount()/phraseSeenCount(), or they would push "Forms seen"
+  // past TOTAL_FORMS.
   return new Set(Object.keys(userProgress)
-    .filter(k => userProgress[k]?.seen && !k.startsWith('alphabet|')));
+    .filter(k => userProgress[k]?.seen
+              && !k.startsWith('alphabet|')
+              && !k.startsWith('phrase|')));
+}
+
+function phraseSeenCount() {
+  return Object.keys(userProgress)
+    .filter(k => k.startsWith('phrase|') && userProgress[k]?.seen).length;
 }
 
 function alphabetSeenCount() {
@@ -1597,7 +1821,26 @@ function renderCategoryGrid() {
     <span class="cat-arrow">→</span>`;
   alphaBtn.onclick = () => showScreen('alphabetScreen');
 
-  grid.replaceChildren(alphaBtn, ...catBtns, testBtn);
+  // Phrases — same standalone-tile treatment as Alphabet, and first in the
+  // grid so today's phrase is the first thing on screen.
+  const today       = todaysPhrases();
+  const freshCount  = today.filter(p => !userProgress[phraseKey(p.id)]?.seen).length;
+  const phraseBtn   = document.createElement('button');
+  phraseBtn.className = 'cat-btn phrase-mode' + (freshCount ? ' fresh' : '');
+  phraseBtn.innerHTML = `
+    <span class="cat-emoji">💬</span>
+    <span class="cat-info">
+      <span class="cat-name">Phrases</span>
+      <span class="cat-stat">${
+        freshCount            ? (freshCount === 1 ? 'New phrase today ✨' : `${freshCount} new phrases today ✨`)
+        : phrases.length      ? `${phrases.length} phrase${phrases.length === 1 ? '' : 's'} to look back on`
+        :                       'Nothing here yet'
+      }</span>
+    </span>
+    <span class="cat-arrow">→</span>`;
+  phraseBtn.onclick = () => showScreen('phrasesScreen');
+
+  grid.replaceChildren(phraseBtn, alphaBtn, ...catBtns, testBtn);
   updateOverallStats();
 }
 
@@ -1844,6 +2087,135 @@ document.addEventListener('keydown', e => {
   if (e.key === 'ArrowLeft')  { showLetter(alphaIndex - 1); }
   if (e.key === 'ArrowRight') { showLetter(alphaIndex + 1); }
 });
+
+// ════════════════════════════════════════════════════════
+//  PHRASES
+//  One phrase a day, written by an admin into Supabase.
+//  Today's sits open at the top; every earlier one stays
+//  below as a reference, collapsed until tapped.
+// ════════════════════════════════════════════════════════
+function renderPhrases() {
+  const today   = todaysPhrases();
+  const earlier = phrases.filter(p => p.publish_on !== todayISO());
+  const n       = phrases.length;
+
+  document.getElementById('phraseCount').textContent =
+    n ? `${n} phrase${n === 1 ? '' : 's'} so far` : 'No phrases yet';
+
+  const todayHost = document.getElementById('phraseToday');
+  if (today.length) {
+    todayHost.replaceChildren(...today.map(p => buildPhraseCard(p, true)));
+  } else {
+    const empty = document.createElement('div');
+    empty.className = 'phrase-empty';
+    empty.innerHTML = 'No phrase for today yet.<br>Check back a little later 🌸';
+    todayHost.replaceChildren(empty);
+  }
+
+  document.getElementById('phraseHistoryLabel').classList.toggle('hidden', earlier.length === 0);
+  document.getElementById('phraseList').replaceChildren(...earlier.map(p => buildPhraseCard(p, false)));
+  document.getElementById('phraseAdminBar').classList.toggle('hidden', !isAdmin);
+
+  // Today's phrase is on screen and open, so it counts as read.
+  today.forEach(p => markPhraseSeen(p.id));
+}
+
+// Everything here comes from a text box, so every field is escaped on the way
+// into innerHTML — the static data files can skip this, phrases cannot.
+function buildPhraseCard(p, featured) {
+  const gloss = Array.isArray(p.gloss) ? p.gloss.filter(g => g && g.w && g.m) : [];
+  const chips = renderChips({
+    transliteration: esc(p.transliteration),
+    words:           gloss.map(g => ({ w: esc(g.w), m: String(g.m) })),
+  });
+
+  const card = document.createElement('div');
+  card.className = 'phrase-card' +
+    (featured ? ' featured'
+              : ' phrase-item' + (userProgress[phraseKey(p.id)]?.seen ? ' seen' : ''));
+
+  // On a history row the transliteration and note stay folded away until tap,
+  // so the list reads as a scannable index of what she has been taught.
+  const fold = featured ? '' : ' phrase-hidden';
+  card.innerHTML = `
+    <div class="phrase-date">${featured ? 'Today · ' : ''}${esc(formatPhraseDate(p.publish_on))}</div>
+    <div class="phrase-row">
+      <div class="phrase-text">
+        <div class="phrase-malayalam">${esc(p.malayalam)}</div>
+        <div class="phrase-translit${fold}">${chips}</div>
+        <div class="phrase-translation">${esc(p.translation)}</div>
+      </div>
+      <button class="speak-example-btn" aria-label="Hear this phrase">🔊</button>
+    </div>
+    ${p.note ? `<div class="phrase-note${fold}">${esc(p.note)}</div>` : ''}`;
+
+  // Synchronous inside the tap — the iOS rule that governs all audio here.
+  card.querySelector('.speak-example-btn').onclick = e => {
+    e.stopPropagation();
+    speakMalayalam(p.malayalam, e.currentTarget);
+  };
+
+  if (!featured) {
+    card.onclick = e => {
+      if (e.target.closest('.word-chip')) return;   // chip popups handle themselves
+      card.classList.toggle('open');
+      if (card.classList.contains('open')) markPhraseSeen(p.id);
+    };
+  }
+  return card;
+}
+
+function markPhraseSeen(id) {
+  const key = phraseKey(id);
+  if (userProgress[key]?.seen) return;
+  markWordsSeen([key]);                       // fire-and-forget async upsert
+}
+
+// ── Admin: add a phrase ───────────────────────────────
+const PHRASE_FIELDS = ['apMalayalam','apTranslit','apTranslation','apGloss','apNote'];
+
+function resetPhraseForm() {
+  PHRASE_FIELDS.forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('apDate').value = todayISO();
+  document.getElementById('addPhraseError').textContent = '';
+}
+
+async function doAddPhrase() {
+  const malayalam   = document.getElementById('apMalayalam').value.trim();
+  const translit    = document.getElementById('apTranslit').value.trim();
+  const translation = document.getElementById('apTranslation').value.trim();
+  const note        = document.getElementById('apNote').value.trim();
+  const publishOn   = document.getElementById('apDate').value || todayISO();
+  const errEl       = document.getElementById('addPhraseError');
+  errEl.textContent = '';
+
+  if (!malayalam)   { errEl.textContent = 'The Malayalam phrase is needed.'; return; }
+  if (!translit)    { errEl.textContent = 'Add a transliteration so she can read it aloud.'; return; }
+  if (!translation) { errEl.textContent = 'Add the English meaning.'; return; }
+
+  setBtn('addPhraseBtn', 'Saving…', true);
+  showLoading('Saving the phrase…');
+
+  const { error } = await addPhrase({
+    publish_on:      publishOn,
+    malayalam,
+    transliteration: translit,
+    translation,
+    gloss:           parseGloss(document.getElementById('apGloss').value),
+    note:            note || null,
+    created_by:      currentUser,
+  });
+
+  if (!error) await fetchPhrases();
+
+  hideLoading();
+  setBtn('addPhraseBtn', 'Save Phrase →', false);
+
+  if (error) { errEl.textContent = 'Could not save that. Please try again.'; return; }
+
+  resetPhraseForm();
+  showScreen('phrasesScreen');
+}
 
 // ════════════════════════════════════════════════════════
 //  SESSION
@@ -2307,6 +2679,8 @@ function showScreen(id) {
   if (id === 'categoryScreen')   renderCategoryGrid();
   if (id === 'wordSelectScreen') renderWordList();
   if (id === 'alphabetScreen')   renderAlphabetGrid();
+  if (id === 'phrasesScreen')    renderPhrases();
+  if (id === 'addPhraseScreen')  resetPhraseForm();
 }
 
 // Session/done back button — goes to the most useful parent screen
@@ -2345,12 +2719,13 @@ function goAgain() {
     // Verify the user still exists in Supabase
     const { data } = await db
       .from('users')
-      .select('name')
+      .select('name, is_admin')
       .eq('username', session.username)
       .single();
     if (data) {
       currentUser = session.username;
       currentName = data.name;
+      isAdmin     = !!data.is_admin;
       await enterApp(data.name);
       return;
     } else {
