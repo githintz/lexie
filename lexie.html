@@ -665,7 +665,8 @@
   }
 
   /* Category + Word-select screens: scroll when content is tall */
-  #categoryScreen, #wordSelectScreen, #alphabetScreen, #phrasesScreen, #addPhraseScreen {
+  #categoryScreen, #wordSelectScreen, #alphabetScreen, #phrasesScreen, #addPhraseScreen,
+  #adminScreen, #setPasswordScreen {
     overflow-y: auto;
     justify-content: flex-start;
     -webkit-overflow-scrolling: touch;
@@ -712,6 +713,8 @@
   /* Pulses only while today's phrase is still unread */
   .cat-btn.phrase-mode.fresh { border-color: rgba(240,192,96,0.75); background: rgba(240,192,96,0.2); }
   .cat-btn.phrase-mode.fresh .cat-stat { color: #9a6b13; font-weight: 600; }
+  .cat-btn.admin-mode { border-color: rgba(148,163,184,0.5); background: rgba(148,163,184,0.14); }
+  .cat-btn.admin-mode:hover:not(:disabled) { border-color: rgba(100,116,139,0.7); background: rgba(148,163,184,0.24); }
 
   /* ── Alphabet screen ── */
   .alpha-inner { width: min(560px, 100%); padding: 0 4px; }
@@ -920,6 +923,68 @@
     margin: -6px 0 10px 2px; line-height: 1.5;
   }
   textarea.login-field { min-height: 84px; resize: vertical; line-height: 1.5; }
+
+  /* ── Admin screen ── */
+  .admin-inner { width: min(560px, 100%); padding: 0 4px; }
+  .admin-header { display: flex; align-items: center; gap: 14px; margin-bottom: 18px; }
+  .admin-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 26px; font-weight: 700; color: #ffffff;
+  }
+  .admin-section-label {
+    font-size: 12px; font-weight: 600; letter-spacing: 1.4px;
+    text-transform: uppercase; color: var(--gold);
+    margin: 26px 0 10px; padding-left: 2px;
+  }
+  .admin-note {
+    font-size: 11.5px; color: rgba(255,255,255,0.45);
+    margin: -4px 0 12px 2px; line-height: 1.5;
+  }
+  .admin-user {
+    padding: 14px 16px; border-radius: 16px;
+    background: rgba(255,255,255,0.96);
+    border: 1.5px solid rgba(255,255,255,0.6);
+    color: var(--text-dark);
+    margin-bottom: 10px;
+  }
+  .admin-user.is-you { border-color: rgba(232,160,48,0.6); }
+  .admin-user-top { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+  .admin-user-name { font-size: 16px; font-weight: 600; }
+  .admin-user-handle { font-size: 12.5px; color: var(--muted-dark); }
+  .admin-badge {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; padding: 3px 8px; border-radius: 999px;
+    background: rgba(240,192,96,0.28); color: #7a5410;
+  }
+  .admin-pass {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 10px; padding: 9px 12px;
+    border-radius: 10px; background: rgba(109,40,217,0.07);
+    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 14px; color: #4c1d95;
+    word-break: break-all;
+  }
+  .admin-pass.empty {
+    font-family: 'DM Sans', sans-serif; font-style: italic;
+    font-size: 12.5px; color: var(--muted-dark);
+    background: rgba(0,0,0,0.04);
+  }
+  .admin-user-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .admin-act {
+    padding: 8px 14px; border-radius: 10px; border: none;
+    background: rgba(109,40,217,0.08); color: #4c1d95;
+    font-family: 'DM Sans', sans-serif; font-size: 12.5px; font-weight: 500;
+    cursor: pointer; transition: background 0.2s ease;
+  }
+  .admin-act:hover { background: rgba(109,40,217,0.16); }
+  .admin-act.danger { background: rgba(220,38,38,0.08); color: #991b1b; }
+  .admin-act.danger:hover { background: rgba(220,38,38,0.16); }
+  .admin-empty {
+    padding: 22px; border-radius: 16px; text-align: center;
+    background: rgba(255,255,255,0.08);
+    border: 1px dashed rgba(255,255,255,0.25);
+    color: var(--muted); font-size: 14px;
+  }
 
   /* ── Word-select screen ── */
   .word-select-inner { width: min(480px, 100%); padding: 0 4px; }
@@ -1264,7 +1329,7 @@
     <div class="phrase-list" id="phraseList"></div>
 
     <div id="phraseAdminBar" style="margin-top:22px" class="hidden">
-      <button class="start-btn" onclick="showScreen('addPhraseScreen')">➕ Add a phrase</button>
+      <button class="start-btn" onclick="openPhraseForm('phrasesScreen')">➕ Add a phrase</button>
     </div>
   </div>
 </div>
@@ -1300,7 +1365,46 @@
 
     <button class="start-btn" id="addPhraseBtn" onclick="doAddPhrase()">Save Phrase →</button>
     <div style="height:10px"></div>
-    <button class="btn-secondary" style="width:100%;padding:14px;border-radius:12px" onclick="showScreen('phrasesScreen')">← Cancel</button>
+    <button class="btn-secondary" style="width:100%;padding:14px;border-radius:12px" onclick="showScreen(phraseFormReturn)">← Cancel</button>
+  </div>
+</div>
+
+<!-- ══ ADMIN SCREEN (is_admin only) ══ -->
+<div id="adminScreen" class="screen hidden">
+  <div class="admin-inner">
+    <div class="admin-header">
+      <button class="back-link" onclick="showScreen('categoryScreen')">← Back</button>
+      <h2 class="admin-title">Admin</h2>
+    </div>
+
+    <div class="admin-section-label">Phrases</div>
+    <p class="admin-note" id="adminPhraseCount">0 phrases published</p>
+    <button class="start-btn" onclick="openPhraseForm('adminScreen')">➕ Add a phrase</button>
+
+    <div class="admin-section-label">Users</div>
+    <p class="admin-note">Passwords are stored in plain text so they can be read back here. Anyone able to read the database can read them too.</p>
+    <div id="adminUserList"></div>
+  </div>
+</div>
+
+<!-- ══ SET PASSWORD SCREEN (is_admin only) ══ -->
+<div id="setPasswordScreen" class="screen hidden">
+  <div class="login-card" style="overflow-y:auto;max-height:96dvh">
+    <div class="home-logo">🔑</div>
+    <h1 class="home-title" style="font-size:32px">Set Password</h1>
+    <p class="home-sub" id="setPassWho">for someone</p>
+
+    <p class="section-label" style="margin-bottom:10px">New password</p>
+    <input class="login-field" id="setPassField" type="text" placeholder="At least 6 characters"
+      autocapitalize="none" autocorrect="off" spellcheck="false"
+      onkeydown="if(event.key==='Enter') doSetPassword()">
+    <p class="phrase-form-hint">Shown as typed — you will be reading it back to them.</p>
+
+    <div class="login-error" id="setPassError"></div>
+
+    <button class="start-btn" id="setPassBtn" onclick="doSetPassword()">Save Password →</button>
+    <div style="height:10px"></div>
+    <button class="btn-secondary" style="width:100%;padding:14px;border-radius:12px" onclick="showScreen('adminScreen')">← Cancel</button>
   </div>
 </div>
 
@@ -1384,8 +1488,11 @@ function clearSession()        { try { localStorage.removeItem(SESSION_KEY); } c
 // ════════════════════════════════════════════════════════
 let currentUser      = null;   // username string
 let currentName      = null;   // display name
-let isAdmin          = false;  // may add phrases (users.is_admin)
+let isAdmin          = false;  // may add phrases and manage users (users.is_admin)
 let phrases          = [];     // published phrases, newest first
+let adminUsers       = [];     // every user row, loaded on entering Admin
+let passTarget       = null;   // the user whose password is being set
+let phraseFormReturn = 'phrasesScreen';  // where Cancel/Save goes back to
 let userProgress     = {};     // { "category|baseKey|formName": { seen, lastSeen } }
 let selectedCategory = null;   // 'pronouns' | 'demonstratives' | 'verbs'
 let selectedBaseKey  = null;   // e.g. 'njan'
@@ -1536,6 +1643,38 @@ async function addPhrase(row) {
   return { error };
 }
 
+// ════════════════════════════════════════════════════════
+//  SUPABASE — USERS (admin only)
+// ════════════════════════════════════════════════════════
+async function fetchUsers() {
+  const { data, error } = await db
+    .from('users')
+    .select('username, name, is_admin, password')
+    .order('name');
+  if (error) { console.error('fetchUsers:', error); return; }
+  adminUsers = data || [];
+}
+
+// Hash and plaintext are written in the same statement so the two can never
+// disagree about what the password actually is.
+async function setUserPassword(username, pass) {
+  const { error } = await db
+    .from('users')
+    .update({ password: pass, password_hash: simpleHash(pass) })
+    .eq('username', username);
+  if (error) console.error('setUserPassword:', error);
+  return { error };
+}
+
+async function setUserAdmin(username, flag) {
+  const { error } = await db
+    .from('users')
+    .update({ is_admin: flag })
+    .eq('username', username);
+  if (error) console.error('setUserAdmin:', error);
+  return { error };
+}
+
 // Phrases sharing the newest published date — usually one, but two on a
 // generous day. Empty when nothing has been published for today yet.
 function todaysPhrases() {
@@ -1608,9 +1747,12 @@ async function doRegister() {
     return;
   }
 
+  // The plaintext sits alongside the hash purely so Admin can read a
+  // forgotten password back. Anyone who can read this table can read it —
+  // there is no hiding it while the anon key ships in the page.
   const { error } = await db
     .from('users')
-    .insert({ username, name, password_hash: simpleHash(pass) });
+    .insert({ username, name, password_hash: simpleHash(pass), password: pass });
 
   hideLoading();
   setBtn('registerBtn', 'Create Account →', false);
@@ -1631,6 +1773,8 @@ function doLogout() {
   currentName      = null;
   isAdmin          = false;
   phrases          = [];
+  adminUsers       = [];
+  passTarget       = null;
   userProgress     = {};
   selectedCategory = null;
   selectedBaseKey  = null;
@@ -1840,7 +1984,24 @@ function renderCategoryGrid() {
     <span class="cat-arrow">→</span>`;
   phraseBtn.onclick = () => showScreen('phrasesScreen');
 
-  grid.replaceChildren(phraseBtn, alphaBtn, ...catBtns, testBtn);
+  const tiles = [phraseBtn, alphaBtn, ...catBtns, testBtn];
+
+  // Admin — last in the grid, and only for the people who can use it.
+  if (isAdmin) {
+    const adminBtn = document.createElement('button');
+    adminBtn.className = 'cat-btn admin-mode';
+    adminBtn.innerHTML = `
+      <span class="cat-emoji">🔑</span>
+      <span class="cat-info">
+        <span class="cat-name">Admin</span>
+        <span class="cat-stat">Phrases and users</span>
+      </span>
+      <span class="cat-arrow">→</span>`;
+    adminBtn.onclick = () => showScreen('adminScreen');
+    tiles.push(adminBtn);
+  }
+
+  grid.replaceChildren(...tiles);
   updateOverallStats();
 }
 
@@ -2215,6 +2376,119 @@ async function doAddPhrase() {
 
   resetPhraseForm();
   showScreen('phrasesScreen');
+}
+
+// ════════════════════════════════════════════════════════
+//  ADMIN
+//  Add phrases, and read or set anyone's password when
+//  they forget it. Gated on users.is_admin.
+// ════════════════════════════════════════════════════════
+
+// Every way into the admin screens goes through here, so the flag is the
+// gate rather than just hiding the tile.
+function requireAdmin() {
+  if (isAdmin) return true;
+  showScreen('categoryScreen');
+  return false;
+}
+
+// Remembers the screen to return to, so Cancel from Admin does not dump you
+// on the Phrases screen you never came from.
+function openPhraseForm(returnTo) {
+  phraseFormReturn = returnTo || 'phrasesScreen';
+  showScreen('addPhraseScreen');
+}
+
+async function renderAdmin() {
+  if (!requireAdmin()) return;
+
+  document.getElementById('adminPhraseCount').textContent =
+    `${phrases.length} phrase${phrases.length === 1 ? '' : 's'} published`;
+
+  const host = document.getElementById('adminUserList');
+  host.innerHTML = '<div class="admin-empty">Loading users…</div>';
+
+  await fetchUsers();
+
+  if (!adminUsers.length) {
+    host.innerHTML = '<div class="admin-empty">No users found.</div>';
+    return;
+  }
+  host.replaceChildren(...adminUsers.map(buildUserCard));
+}
+
+function buildUserCard(u) {
+  const card = document.createElement('div');
+  card.className = 'admin-user' + (u.username === currentUser ? ' is-you' : '');
+  card.innerHTML = `
+    <div class="admin-user-top">
+      <span class="admin-user-name">${esc(u.name)}</span>
+      <span class="admin-user-handle">@${esc(u.username)}</span>
+      ${u.is_admin ? '<span class="admin-badge">Admin</span>' : ''}
+    </div>
+    ${u.password
+      ? `<div class="admin-pass">${esc(u.password)}</div>`
+      : `<div class="admin-pass empty">Not recorded — set one to read it back here.</div>`}
+    <div class="admin-user-actions">
+      <button class="admin-act" data-act="pass">Set password</button>
+      <button class="admin-act${u.is_admin ? ' danger' : ''}" data-act="admin">
+        ${u.is_admin ? 'Remove admin' : 'Make admin'}
+      </button>
+    </div>`;
+
+  card.querySelector('[data-act="pass"]').onclick = () => openSetPassword(u);
+  card.querySelector('[data-act="admin"]').onclick = () => toggleAdmin(u);
+  return card;
+}
+
+function openSetPassword(u) {
+  if (!requireAdmin()) return;
+  passTarget = u;
+  document.getElementById('setPassWho').textContent   = `for ${u.name} (@${u.username})`;
+  document.getElementById('setPassField').value       = '';
+  document.getElementById('setPassError').textContent = '';
+  showScreen('setPasswordScreen');
+}
+
+async function doSetPassword() {
+  if (!requireAdmin() || !passTarget) return;
+  const pass  = document.getElementById('setPassField').value;
+  const errEl = document.getElementById('setPassError');
+  errEl.textContent = '';
+
+  if (pass.length < 6) { errEl.textContent = 'Password must be at least 6 characters.'; return; }
+
+  setBtn('setPassBtn', 'Saving…', true);
+  showLoading('Saving the password…');
+  const { error } = await setUserPassword(passTarget.username, pass);
+  hideLoading();
+  setBtn('setPassBtn', 'Save Password →', false);
+
+  if (error) { errEl.textContent = 'Could not save that. Please try again.'; return; }
+
+  passTarget = null;
+  showScreen('adminScreen');       // re-fetches, so the new password shows
+}
+
+async function toggleAdmin(u) {
+  if (!requireAdmin()) return;
+
+  // Refuse to strip the last admin — that locks everyone out of this screen
+  // and only a Supabase query could undo it.
+  if (u.is_admin && adminUsers.filter(x => x.is_admin).length === 1) {
+    alert('That is the only admin account. Make someone else an admin first.');
+    return;
+  }
+
+  showLoading(u.is_admin ? 'Removing admin…' : 'Making admin…');
+  const { error } = await setUserAdmin(u.username, !u.is_admin);
+  hideLoading();
+  if (error) { alert('Could not change that. Please try again.'); return; }
+
+  // Demoting yourself takes effect immediately, tile and all.
+  if (u.username === currentUser) isAdmin = !u.is_admin;
+  if (!isAdmin) { showScreen('categoryScreen'); return; }
+  renderAdmin();
 }
 
 // ════════════════════════════════════════════════════════
@@ -2681,6 +2955,7 @@ function showScreen(id) {
   if (id === 'alphabetScreen')   renderAlphabetGrid();
   if (id === 'phrasesScreen')    renderPhrases();
   if (id === 'addPhraseScreen')  resetPhraseForm();
+  if (id === 'adminScreen')      renderAdmin();
 }
 
 // Session/done back button — goes to the most useful parent screen
